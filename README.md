@@ -8,7 +8,7 @@
 
 **These example codes are comprehensive examples(like multi-sensor examples, smart-home examples, industrial examples, some cases for STEAM courses...), not basic examples.**
 
-* If you want some basic arduino-m5stack examples, you can visit this repository.
+* If you want some basic arduino-m5stack examples which intended to show basic esp-adf functionality, you can visit this repository.
 
   [M5Stack/M5Stack](https://github.com/m5stack/M5Stack/tree/master/examples) - M5Core
 
