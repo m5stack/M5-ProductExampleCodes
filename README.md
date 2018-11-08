@@ -10,7 +10,7 @@
 
 * If you want some basic arduino-m5stack examples, you can visit this repository.
 
-  [M5Stack/M5Stack](https://github.com/m5stack/M5Stack/tree/master/examples)
+  [M5Stack/M5Stack](https://github.com/m5stack/M5Stack/tree/master/examples) - M5Core
 
 * If you want some testing programs, you can visit this repository.
 
