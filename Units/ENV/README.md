@@ -11,10 +11,15 @@
 串口终端显示结果：
 
 Temperatura: 25.40*C  Humedad: 28.50%  Pressure: 102137.55Pa
+
 Temperatura: 25.40*C  Humedad: 28.50%  Pressure: 102136.17Pa
+
 Temperatura: 25.50*C  Humedad: 28.50%  Pressure: 102139.25Pa
+
 Temperatura: 25.50*C  Humedad: 28.50%  Pressure: 102133.55Pa
+
 Temperatura: 25.50*C  Humedad: 28.50%  Pressure: 102137.08Pa
+
 Temperatura: 25.50*C  Humedad: 28.50%  Pressure: 102140.25Pa
 
 
