@@ -1,6 +1,6 @@
 # M5-ProductExampleCodes
 
-[中文](README_zh_CN.md) | [English](README.md) | 日本語
+[中文](README.md) | [English](README_en.md) | 日本語
 
 *M5Stackから提供されるすべてのサンプルコードはこのリポジトリに集約されています。*
 
