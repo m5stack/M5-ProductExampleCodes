@@ -16,12 +16,11 @@ uint8_t y_data;
 uint8_t button_data;
 char data[100];
 void loop() {
-  // put your main code here, to run repeatedly:
   Wire.requestFrom(JOY_ADDR, 3);
   if (Wire.available()) {
-    x_data = Wire.read();
-    y_data = Wire.read();
-    button_data = Wire.read();
+    x_data = Wire.read();// X(range: 10~250)
+    y_data = Wire.read();// Y(range: 10~250)
+    button_data = Wire.read();// Z(0: released 1: pressed)
     sprintf(data, "x:%d y:%d button:%d\n", x_data, y_data, button_data);
     Serial.print(data);
   }
