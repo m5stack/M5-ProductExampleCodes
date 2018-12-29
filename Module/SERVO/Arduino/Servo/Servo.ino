@@ -10,10 +10,9 @@ void setup() {
     M5.Lcd.print("Servo Example");
 
     Wire.begin(21, 22, 100000);
-    // put your setup code here, to run once:
 }
 
-// addr 0x01 mean control the number 1 servo by us
+// addr 0x01 means "control the number 1 servo by us"
 void Servo_write_us(uint8_t number, uint16_t us) {
     Wire.beginTransmission(SERVO_ADDR);
     Wire.write(0x00 | number);
@@ -22,7 +21,7 @@ void Servo_write_us(uint8_t number, uint16_t us) {
     Wire.endTransmission();
 }
 
-// addr 0x11 mean control the number 1 servo by angle
+// addr 0x11 means "control the number 1 servo by angle"
 void Servo_write_angle(uint8_t number, uint8_t angle) {
     Wire.beginTransmission(SERVO_ADDR);
     Wire.write(0x10 | number);
