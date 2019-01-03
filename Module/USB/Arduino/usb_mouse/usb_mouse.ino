@@ -7,7 +7,6 @@
 #include "M5Mouse.h"
 
 USB Usb;
-//HIDUniversal      HidMouse(&Usb);
 USBHub Hub(&Usb);
 HIDBoot<USB_HID_PROTOCOL_MOUSE> HidMouse(&Usb);
 MouseRptParser Prs;
@@ -57,11 +56,8 @@ void setup()
 {
   M5.begin();
   Serial.println("M5USB_Demo Start...");
-
   if (Usb.Init() == -1)
     Serial.println("USB Host Init Error");
-  //  HidMouse.SetProtocol(0, HID_RPT_PROTOCOL);
-
   HidMouse.SetReportParser(0, (HIDReportParser *)&Prs);
   delay(200);
 }
@@ -69,18 +65,16 @@ void setup()
 void loop()
 {
   Usb.Task();
-
-  if (Usb.getUsbTaskState() == USB_STATE_RUNNING)
+  if(Usb.getUsbTaskState() == USB_STATE_RUNNING)
   {
-    //  Serial.println("ok");
     Mouse_Pointer(mou_px, mou_py);
     mou_px = 0;
     mou_py = 0;
-    if (mou_button == 1)
+    if (mou_button == 1)// left button pressed
       M5.Lcd.drawCircle(StaPotX, StaPotY, 1, WHITE);
-    if (mou_button == 2)
+    if (mou_button == 2)// right button pressed
       M5.Lcd.drawCircle(StaPotX, StaPotY, 1, GREEN);
-    if (mou_button == 4)
+    if (mou_button == 4)// middle button pressed
       M5.Lcd.fillScreen(BLACK);
   }
 }
