@@ -62,15 +62,6 @@ void loop()
     M5.Lcd.setCursor(0,60); M5.Lcd.print("  Key State : ");
     M5.Lcd.setCursor(0,80); M5.Lcd.print("  Key Value : ");
     GetValue();
-    // if(encoder_increment!=0)
-    // {
-    //     M5.Lcd.fillRect(100,40,100,25,BLACK);
-    //     M5.Lcd.setCursor(100,40); M5.Lcd.print(encoder_increment);
-    // }
-
-    // M5.Lcd.fillRect(100,60,100,25,BLACK);
-    // M5.Lcd.fillRect(100,80,100,25,BLACK);
-
     if(button_state==0)
     {
         M5.Lcd.fillRect(100,60,100,25,BLACK);
@@ -90,10 +81,6 @@ void loop()
             Led(i, 0, 0, 0);
         }
     }
-
-
-
-
     M5.Lcd.fillRect(100,40,50,25,BLACK);
     if(direct){
         encoder_value -= encoder_increment;
