@@ -1,3 +1,6 @@
+/*
+    Install FastLED library first.
+ */
 #include <M5Stack.h>
 #include "FastLED.h"
 
