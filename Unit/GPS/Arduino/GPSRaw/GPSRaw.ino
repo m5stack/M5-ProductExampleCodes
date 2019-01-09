@@ -9,7 +9,7 @@ void setup() {
 
   Serial.println("hello");
   termInit();
-}
+} 
 
 void loop() {
   // put your main code here, to run repeatedly:
