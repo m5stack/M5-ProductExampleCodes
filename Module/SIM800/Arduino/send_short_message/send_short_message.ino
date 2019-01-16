@@ -38,7 +38,7 @@ bool _sendSms()
     _buffer = _readSerial(5000);
 
     Serial2.print (F("AT+CSCA=\""));    // 信息中心号码，深圳联通
-    Serial2.print ("+8613010200500");
+    Serial2.print ("+8618820991250");
     Serial2.print(F("\"\r"));
     _buffer = _readSerial(5000);
 
@@ -46,7 +46,7 @@ bool _sendSms()
     _buffer = _readSerial(5000);
 
     Serial2.print (F("AT+CMGS=\""));
-    Serial2.print ("+8613574146642");        // 对方手机号
+    Serial2.print ("+8613265764263");        // 对方手机号
     Serial2.print(F("\"\r"));
     _buffer = _readSerial(5000);
 
