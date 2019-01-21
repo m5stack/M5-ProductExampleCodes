@@ -24,8 +24,6 @@ long lastSendTime = 0;        // last send time
 int interval = 1000;          // interval between sends
 
 void setup() {
-  pinMode(5,OUTPUT);
-  digitalWrite(5,HIGH);
   M5.begin();
   while (!Serial);
 
@@ -138,53 +136,53 @@ void onReceive(int packetSize) {
 
 
 
-#include <M5Stack.h>
-#include <M5LoRa.h>
+// #include <M5Stack.h>
+// #include <M5LoRa.h>
 
-String outgoing;              // outgoing message
+// String outgoing;              // outgoing message
 
-byte msgCount = 0;            // count of outgoing messages
-byte localAddress = 0xBB;     // address of this device
-byte destination = 0xFF;      // destination to send to
+// byte msgCount = 0;            // count of outgoing messages
+// byte localAddress = 0xBB;     // address of this device
+// byte destination = 0xFF;      // destination to send to
 
-//initialization
-M5.begin();
-// override the default CS, reset, and IRQ pins (optional)
-LoRa.setPins();// set CS, reset, IRQ pin
-LoRa.begin(433E6);             // initialize ratio at 915 MHz
+// //initialization
+// M5.begin();
+// // override the default CS, reset, and IRQ pins (optional)
+// LoRa.setPins();// set CS, reset, IRQ pin
+// LoRa.begin(433E6);             // initialize ratio at 915 MHz
 
-//send message
-  String message = "HeLoRa World!";   // send a message
-  sendMessage(message);
+// //send message
+//   String message = "HeLoRa World!";   // send a message
+//   sendMessage(message);
 
-  // parse for a packet, and call onReceive with the result:
-  onReceive(LoRa.parsePacket());
+//   // parse for a packet, and call onReceive with the result:
+//   onReceive(LoRa.parsePacket());
 
-//send message
-void sendMessage(String outgoing) {
-  LoRa.beginPacket();                   // start packet
-  LoRa.write(destination);              // add destination address
-  LoRa.write(localAddress);             // add sender address
-  LoRa.write(msgCount);                 // add message ID
-  LoRa.write(outgoing.length());        // add payload length
-  LoRa.print(outgoing);                 // add payload
-  LoRa.endPacket();                     // finish packet and send it
-  msgCount++;                           // increment message ID
-}
+// //send message
+// void sendMessage(String outgoing) {
+//   LoRa.beginPacket();                   // start packet
+//   LoRa.write(destination);              // add destination address
+//   LoRa.write(localAddress);             // add sender address
+//   LoRa.write(msgCount);                 // add message ID
+//   LoRa.write(outgoing.length());        // add payload length
+//   LoRa.print(outgoing);                 // add payload
+//   LoRa.endPacket();                     // finish packet and send it
+//   msgCount++;                           // increment message ID
+// }
 
-//receive message
-void onReceive(int packetSize) {
-  if (packetSize == 0) return;          // if there's no packet, return
+// //receive message
+// void onReceive(int packetSize) {
+//   if (packetSize == 0) return;          // if there's no packet, return
 
-  // read packet header bytes:
-  int recipient = LoRa.read();          // recipient address
-  byte sender = LoRa.read();            // sender address
-  byte incomingMsgId = LoRa.read();     // incoming msg ID
-  byte incomingLength = LoRa.read();    // incoming msg length
+//   // read packet header bytes:
+//   int recipient = LoRa.read();          // recipient address
+//   byte sender = LoRa.read();            // sender address
+//   byte incomingMsgId = LoRa.read();     // incoming msg ID
+//   byte incomingLength = LoRa.read();    // incoming msg length
 
-  String incoming = "";
+//   String incoming = "";
 
-  while (LoRa.available()) {
-    incoming += (char)LoRa.read();
-  }
-}
+//   while (LoRa.available()) {
+//     incoming += (char)LoRa.read();
+//   }
+// }
