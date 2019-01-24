@@ -33,7 +33,7 @@ void loop(){
   // sprintf(&weight, "%0.2f", scale.getGram());
   Serial.print("The weight: ");
   Serial.print(weight);
-  M5.Lcd.fillRect(150, 90, 30, 30, BLACK);
+  M5.Lcd.fillRect(150, 90, 100, 20, BLACK);
   M5.Lcd.setCursor(150, 90);
   M5.Lcd.print(weight);
   Serial.println(" g");
