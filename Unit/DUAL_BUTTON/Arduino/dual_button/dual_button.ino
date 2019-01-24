@@ -1,3 +1,6 @@
+/*
+  This Unit connects to GRVOE B on M5Core.
+*/
 #include <M5Stack.h>
 
 int last_value_red = 0;
@@ -21,12 +24,12 @@ void setup() {
 void loop() {
   cur_value_red = digitalRead(26);
   cur_value_blue = digitalRead(36);
-  
+
   M5.Lcd.setCursor(0,25); M5.Lcd.print("Blue Status: ");
   M5.Lcd.setCursor(0,45); M5.Lcd.print("Blue Value: ");
   M5.Lcd.setCursor(0,65); M5.Lcd.print(" Red Status: ");
   M5.Lcd.setCursor(0,85); M5.Lcd.print(" Red Value: ");
-    
+
   if(cur_value_blue != last_value_blue){
     M5.Lcd.fillRect(160,25,100,25,BLACK);
     M5.Lcd.fillRect(160,45,100,25,BLACK);
@@ -62,6 +65,6 @@ void loop() {
       }
       last_value_red = cur_value_red;
   }
-  
+
   M5.update();
 }

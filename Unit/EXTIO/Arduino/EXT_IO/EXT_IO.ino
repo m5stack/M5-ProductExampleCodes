@@ -22,7 +22,7 @@ void setup()
   ioCon1.twiRead(res);
   Serial.printf("res:%d\r\n", res);
 
-  ioCon1.portMode0(ALLOUTPUT); //Set the port as all output 
+  ioCon1.portMode0(ALLOUTPUT); //Set the port as all output
 }
 
 void loop()
