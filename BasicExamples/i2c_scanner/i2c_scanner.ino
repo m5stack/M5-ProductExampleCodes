@@ -53,7 +53,7 @@ void loop()
   M5.Lcd.println(". Scanning...");
 
   nDevices = 0;
-  for(address = 1; address < 127; address++ )
+  for (address = 1; address < 127; address++ )
   {
     // The i2c_scanner uses the return value of
     // the Write.endTransmisstion to see if
@@ -65,39 +65,39 @@ void loop()
     {
       Serial.print("I2C device found at address 0x");
       M5.Lcd.print("I2C device found at address 0x");
-      if (address<16){
+      if (address < 16) {
         Serial.print("0");
         Serial.print("0");
       }
-      Serial.print(address,HEX);
-      M5.Lcd.print(address,HEX);
+      Serial.print(address, HEX);
+      M5.Lcd.print(address, HEX);
       Serial.println("  !");
       M5.Lcd.println("  !");
 
       nDevices++;
     }
-    else if (error==4)
+    else if (error == 4)
     {
       Serial.print("Unknown error at address 0x");
       M5.Lcd.print("Unknown error at address 0x");
-      if (address<16){
+      if (address < 16) {
         Serial.print("0");
         Serial.print("0");
       }
-      Serial.print(address,HEX);
-      M5.Lcd.print(address,HEX);
+      Serial.print(address, HEX);
+      M5.Lcd.print(address, HEX);
     }
   }
-  if (nDevices == 0){
+  if (nDevices == 0) {
     Serial.println("No I2C devices found\n");
     M5.Lcd.println("No I2C devices found\n");
   }
 
   else
   {
-	  Serial.print(">>>> Found total ");;
-	  Serial.print(nDevices);
-	  Serial.println(" devices\n");
+    Serial.print(">>>> Found total ");;
+    Serial.print(nDevices);
+    Serial.println(" devices\n");
   }
 
   delay(2000);           // wait 5 seconds for next scan
