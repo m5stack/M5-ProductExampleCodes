@@ -9,20 +9,20 @@
 #define ACK_NOUSER     0x05
 #define ACK_USER_EXIST 0x07
 #define ACK_TIMEOUT    0x08
- 
+
 //Index Definition
 #define HEAD 0
 #define CMD  1
 #define CHK  6
 #define TAIL 7
- 
+
 #define P1   2
 #define P2   3
 #define P3   4
 #define Q1   2
 #define Q2   3
 #define Q3   4
- 
+
 //Command
 #define CMD_HEAD          0xF5
 #define CMD_TAIL          0xF5
@@ -35,9 +35,9 @@
 #define CMD_USER_CNT      0x09
 #define CMD_SLEEP_MODE    0x2C
 #define CMD_ADD_MODE      0x2D
- 
+
 #define CMD_FINGER_DETECTED 0x14
- 
+
 uint8_t TxBuf[9];        //Send Packets
 uint8_t RxBuf[9];        //Receive Packets
 uint8_t RxCnt;
@@ -51,26 +51,26 @@ uint8_t fpm_sendAndReceive(uint16_t timeout)
 {
     uint8_t  i, j;
     uint8_t checkSum = 0;
-   
+
     RxCnt = 0;
     TxBuf[5] = 0; //The sixth bit of command data is always zero
-  
+
     /*Send 8-bit packets*/
     Serial2.write(CMD_HEAD);     //0
     for (i = 1; i < 6; i++)       //1-5
     {
-        Serial2.write(TxBuf[i]);    
+        Serial2.write(TxBuf[i]);
         checkSum ^= TxBuf[i];
     }
     Serial2.write(checkSum);    //6   Check
     Serial2.write(CMD_TAIL);    //7
-    
+
     while (RxCnt < 8 && timeout > 0)
     {
         delay(1);
-        timeout--;       
+        timeout--;
     }
-    
+
     uint8_t ch;
     for(i=0;i<8;i++)
     {
@@ -85,9 +85,9 @@ uint8_t fpm_sendAndReceive(uint16_t timeout)
     if (RxBuf[HEAD] != CMD_HEAD) return ACK_FAIL;
     if (RxBuf[TAIL] != CMD_TAIL) return ACK_FAIL;
     if (RxBuf[CMD] != (TxBuf[CMD])) return ACK_FAIL;
-    
+
     checkSum = 0;
-    for (j = 1; j < CHK; j++) {   
+    for (j = 1; j < CHK; j++) {
         checkSum ^= RxBuf[j];
     }
         if (checkSum != RxBuf[CHK]) {
@@ -104,14 +104,14 @@ uint8_t fpm_sendAndReceive(uint16_t timeout)
 uint16_t fpm_getUserNum(void)
 {
     uint8_t res;
-    
+
     TxBuf[CMD] = CMD_USER_CNT;
     TxBuf[P1] = 0;
     TxBuf[P2] = 0;
     TxBuf[P3] = 0;
-    
+
     res = fpm_sendAndReceive(200);
-    
+
     if(res == ACK_SUCCESS && RxBuf[Q3] == ACK_SUCCESS) {
         return RxBuf[Q2];
     }
@@ -128,14 +128,14 @@ uint16_t fpm_getUserNum(void)
 uint8_t fpm_deleteAllUser(void)
 {
     uint8_t res;
-    
+
     TxBuf[CMD] = CMD_DEL_ALL;
     TxBuf[P1] = 0;
     TxBuf[P2] = 0;
     TxBuf[P3] = 0;
-    
+
     res = fpm_sendAndReceive(200);
-    
+
     if(res == ACK_SUCCESS && RxBuf[Q3] == ACK_SUCCESS) {
         return ACK_SUCCESS;
     }
@@ -152,29 +152,29 @@ uint8_t fpm_deleteAllUser(void)
 uint8_t fpm_addUser(uint8_t userNum, uint8_t userPermission)
 {
     uint8_t res;
-    
+
     TxBuf[CMD] = CMD_ADD_1;
     TxBuf[P1] = 0;
     TxBuf[P2] = userNum;
     TxBuf[P3] = userPermission;
-    
+
     res = fpm_sendAndReceive(3000);           //First time
-    
+
     if(res == ACK_SUCCESS) {
         if(RxBuf[Q3] == ACK_SUCCESS) {
         TxBuf[CMD] = CMD_ADD_2;
-        
-        res = fpm_sendAndReceive(3000);       //Second time 
-        
+
+        res = fpm_sendAndReceive(3000);       //Second time
+
         if(res == ACK_SUCCESS) {
             if(RxBuf[Q3] == ACK_SUCCESS) {
             TxBuf[CMD] = CMD_ADD_3;
-            
+
             res = fpm_sendAndReceive(3000);    //Third time
-            
+
             if(res == ACK_SUCCESS) {
                 return RxBuf[Q3];
-            }  
+            }
           }
         }
       }
@@ -190,15 +190,15 @@ uint8_t fpm_addUser(uint8_t userNum, uint8_t userPermission)
 uint8_t fpm_compareFinger(void)
 {
     uint8_t res;
-    
+
     TxBuf[CMD] = CMD_MATCH;
     TxBuf[P1] = 0;
     TxBuf[P2] = 0;
     TxBuf[P3] = 0;
-    
+
     res = fpm_sendAndReceive(3000);
-    
-    if(res == ACK_SUCCESS) 
+
+    if(res == ACK_SUCCESS)
     {
         if(RxBuf[Q3] == ACK_NOUSER) {
         return ACK_NOUSER;
@@ -219,7 +219,7 @@ void CleanScreen()
 {
     M5.Lcd.setTextColor(WHITE);
     M5.Lcd.fillRect(0,50,400,300,BLACK);
-    M5.Lcd.setCursor(0, 50); 
+    M5.Lcd.setCursor(0, 50);
     M5.Lcd.setTextSize(2);
     userNum = fpm_getUserNum();
     M5.Lcd.print("userNum:");
@@ -234,11 +234,11 @@ void setup() {
     M5.Lcd.setTextColor(YELLOW);
     M5.Lcd.setTextFont(2);
     M5.Lcd.setTextSize(3);
-    M5.Lcd.setCursor(20, 0); 
+    M5.Lcd.setCursor(20, 0);
     M5.Lcd.println("Finger example");
     M5.Lcd.setTextColor(WHITE);
     M5.Lcd.fillRect(0,50,400,300,BLACK);
-    M5.Lcd.setCursor(0, 50); 
+    M5.Lcd.setCursor(0, 50);
     M5.Lcd.setTextSize(2);
     userNum = fpm_getUserNum();
     M5.Lcd.print("userNum:");
@@ -253,7 +253,7 @@ void loop(){
     if(M5.BtnA.wasPressed()){
         CleanScreen();
         M5.Lcd.println("Fingerprint Typing");
-        
+
         res1 = fpm_addUser(userNum,1);
         if(res1 == ACK_SUCCESS){
             M5.Lcd.println("Success");
@@ -273,7 +273,7 @@ void loop(){
     if(M5.BtnB.wasPressed()){
       CleanScreen();
       M5.Lcd.println("Matching");
-      
+
       res1 = fpm_compareFinger();
       if(res1 == ACK_SUCCESS){
           M5.Lcd.println("Success");
@@ -289,7 +289,7 @@ void loop(){
     if(M5.BtnC.wasPressed()){
       res1 = fpm_deleteAllUser();
       CleanScreen();
-      
+
       if(res1 == ACK_SUCCESS){
           M5.Lcd.println("Delete All User Successful");
       }
