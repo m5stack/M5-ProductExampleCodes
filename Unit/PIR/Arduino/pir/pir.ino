@@ -12,8 +12,8 @@ void setup() {
   Serial.println("PIR example: ");
   M5.Lcd.setCursor(65, 10);
   M5.Lcd.setTextColor(WHITE);
-  pinMode(16, INPUT);
-} 
+  pinMode(36, INPUT);
+}
 
 void loop() {
   M5.Lcd.setCursor(0,25); M5.Lcd.print("Status: ");
