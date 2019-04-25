@@ -14,7 +14,7 @@ void setup() {
 
     Serial.println(F("ENV Unit(DHT12 and BMP280) test..."));
 
-    if (!bme.begin()){  
+    if (!bme.begin(0x76)){
       Serial.println("Could not find a valid BMP280 sensor, check wiring!");
       while (1);
     }
@@ -22,7 +22,7 @@ void setup() {
 }
 
 void loop() {
- 
+
     float tmp = dht12.readTemperature();
     float hum = dht12.readHumidity();
     float pressure = bme.readPressure();
@@ -35,6 +35,3 @@ void loop() {
 
     delay(100);
 }
-
-
-
