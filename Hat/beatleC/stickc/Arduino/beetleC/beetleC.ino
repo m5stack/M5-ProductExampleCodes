@@ -172,7 +172,7 @@ static void initWifi() {
 
   WiFi.mode(WIFI_AP_STA);
   String Mac = WiFi.macAddress();
-  String SSID = "beatle:"+ Mac;
+  String SSID = "BeetleC:"+ Mac;
   bool result = WiFi.softAP(SSID.c_str(), "12345678", 0, 0);
   if (!result){
     Serial.println("AP Config failed.");
@@ -184,7 +184,7 @@ static void initWifi() {
   Serial.print("AP IP address: ");
   Serial.println(myIP);
 
-  M5.Lcd.println("Beatle");
+  M5.Lcd.println("BeetleC");
   M5.Lcd.setTextSize(1);
   M5.Lcd.println();
   M5.Lcd.setCursor(30, 50, 1);
