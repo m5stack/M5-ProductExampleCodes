@@ -61,7 +61,7 @@ void setup() {
   M5.Lcd.fillScreen(WHITE);
   M5.Lcd.fillScreen(BLACK);
   M5.Lcd.setRotation(3);
-  M5.Lcd.setCursor(40, 30, 1);
+  M5.Lcd.setCursor(40, 20, 1);
   M5.Lcd.setTextSize(2);
   
   // Lcd display
@@ -187,6 +187,8 @@ static void initWifi() {
   M5.Lcd.println("BeetleC");
   M5.Lcd.setTextSize(1);
   M5.Lcd.println();
-  M5.Lcd.setCursor(30, 50, 1);
+  M5.Lcd.setCursor(30, 40, 1);
   M5.Lcd.printf(Mac.c_str());
+  M5.Lcd.setCursor(20, 50, 2);
+  M5.Lcd.print("password:12345678");
 }
