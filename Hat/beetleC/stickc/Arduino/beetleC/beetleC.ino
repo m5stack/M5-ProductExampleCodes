@@ -67,7 +67,7 @@ void setup() {
   M5.Lcd.fillScreen(WHITE);
   M5.Lcd.fillScreen(BLACK);
   M5.Lcd.setRotation(3);
-  M5.Lcd.setCursor(40, 30, 1);
+  M5.Lcd.setCursor(40, 20, 1);
   M5.Lcd.setTextSize(2);
   
   // Lcd display
@@ -176,31 +176,6 @@ void carControl(int8_t x, int8_t y) {
     led(num, color); 
   }
 
-  /*
-  if(x == 0) {
-    leftwheel(uint8_t(2*y));
-    rightwheel(uint8_t(2*y));
-  }
-  else if (x > 0){
-    if (y > 0){
-      leftwheel(uint8_t(2*(y + x/2)));
-      rightwheel(uint8_t(2*y - x/2));  
-    }
-    else {
-      leftwheel(uint8_t(2*(y - x/2)));
-      rightwheel(uint8_t(2*(y + x/2)));  
-    }
-  }
-  else if (x < 0){
-    if (y > 0) {
-      leftwheel(uint8_t(2*(y + x/2)));
-      rightwheel(uint8_t(2*(y - x/2)));
-    } else {
-      leftwheel(uint8_t(2*(y - x/2)));
-      rightwheel(uint8_t(2*(y + x/2))); 
-    }
-  }
-  */
 }
 
 esp_err_t controlPage(httpd_req_t *req) {
@@ -302,7 +277,7 @@ static void initWifi() {
 
   WiFi.mode(WIFI_AP_STA);
   String Mac = WiFi.macAddress();
-  String SSID = "beetle:"+ Mac;
+  String SSID = "beetleC:"+ Mac;
   bool result = WiFi.softAP(SSID.c_str(), "12345678", 0, 0);
   if (!result){
     Serial.println("AP Config failed.");
@@ -314,9 +289,11 @@ static void initWifi() {
   Serial.print("AP IP address: ");
   Serial.println(myIP);
 
-  M5.Lcd.println("Beetle");
+  M5.Lcd.println("BeetleC");
   M5.Lcd.setTextSize(1);
   M5.Lcd.println();
-  M5.Lcd.setCursor(30, 50, 1);
+  M5.Lcd.setCursor(30, 40, 1);
   M5.Lcd.printf(Mac.c_str());
+  M5.Lcd.setCursor(20, 50, 2);
+  M5.Lcd.print("password:12345678");
 }
