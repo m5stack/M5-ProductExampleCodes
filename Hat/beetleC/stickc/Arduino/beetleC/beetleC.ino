@@ -3,7 +3,13 @@
 #include "esp_http_server.h"
 #include "carControl.h"
 #include "page.h"
+#include <math.h>
+#include "setTimer.h"
 
+#include "lock.h"
+
+double a = floor(2.6);
+int flag = 0;
 
 #define ALL_LED 7
 uint32_t allColor = 0;
@@ -70,12 +76,19 @@ void setup() {
   BtnSet();
   vTaskDelay(100 / portTICK_PERIOD_MS);
   http_server_init();
-  
+
+  setTimer();
   blink();
 }
 
 // the loop routine runs over and over again forever
 void loop(){
+  timerCounting();
+//  if (readTimerFlag()){
+////    Serial.printf("speed reset\r\n");
+//    leftwheel(0);
+//    rightwheel(0);
+//  }
   readBtn();
 }
 
@@ -85,7 +98,90 @@ void carLRcontrol(int8_t left, int8_t right) {
   rightwheel(right);
 }
 
+void carControl(int8_t x, int8_t y) {
+//  Serial.printf("x: %d, y: %d\r\n",x,y);
+
+  int add = 0;
+  if (y != 0) {
+    add = 20;
+  }
+
+  float argv = 0;
+  if (x > 25) {
+    argv = (125 - x) / 10.0;
+
+    if (y > -15 && y < 15) {
+      if (x > 117) {
+        leftwheel(90);
+        rightwheel(-90);
+      }
+      else if (x < -117) {
+        leftwheel(-90);
+        rightwheel(90);
+      }
+    }
+
+    if(y > 15){
+      rightwheel(uint8_t(argv/10*(y)));
+      leftwheel(uint8_t(y));    
+    }
+    else if (y < -15) {
+      rightwheel(uint8_t(argv/10*(y)));
+      leftwheel(uint8_t(y));    
+    }
+  }
+  else if (x < -25){
+    argv = (x + 125) / 10.0;
+
+    if (y > -15 && y < 15) {
+      if (x > 117) {
+        leftwheel(90);
+        rightwheel(-90);
+      }
+      else if (x < -117) {
+        leftwheel(-90);
+        rightwheel(90);
+      }
+    }
+    
+    if (y > 15){
+      rightwheel(uint8_t(y));
+      leftwheel(uint8_t(argv/10*(y)));  
+    }
+    else if (y < -15){
+      rightwheel(uint8_t(y));
+      leftwheel(uint8_t(argv/10*(y)));
+    }
+    
+  }
+  else {
+    if (y > 0){
+      leftwheel(uint8_t(y));
+      rightwheel(uint8_t(y));   
+    }
+    else {
+      leftwheel(uint8_t(y));
+      rightwheel(uint8_t(y));   
+    }
+  }
+
+  
+  if(y < 0) {
+    uint8_t num = 7;
+    uint32_t color = (0x11 << 16);
+    led(num, color);
+  }else if(y > 0) {
+    uint8_t num = 7;
+    uint32_t color = (0x11);
+    led(num, color); 
+  }
+
+}
+
 esp_err_t controlPage(httpd_req_t *req) {
+  resetCount();
+  timerDisable();
+  g_mutex.lock();
 //  Serial.println("control recv");
   size_t buf_len;
   char * buf;
@@ -104,7 +200,6 @@ esp_err_t controlPage(httpd_req_t *req) {
             if (httpd_query_key_value(buf, "left", xval, sizeof(xval)) == ESP_OK &&
                 httpd_query_key_value(buf, "right", yval, sizeof(yval)) == ESP_OK &&
                 httpd_query_key_value(buf, "color", color, sizeof(color)) == ESP_OK) {
-                  
             } else {
                 free(buf);
                 httpd_resp_send_404(req);
@@ -122,10 +217,17 @@ esp_err_t controlPage(httpd_req_t *req) {
     }
 
     int num = 3 - atoi(color);
-    if (num < 3) {
+    if (num == 0) {
       allColor = 0x11 << (num * 8);
       led(ALL_LED, allColor);  
-    } else {
+    } else if (num == 1) {
+       allColor = 0x11 << (num * 8);
+      led(ALL_LED, allColor);  
+    } else if (num == 2) {
+      allColor = 0x17 << (num * 8);
+      led(ALL_LED, allColor);  
+    }
+    else {
       led(ALL_LED, 0x00);
     }
 //    Serial.printf("color %d", num);
@@ -133,7 +235,10 @@ esp_err_t controlPage(httpd_req_t *req) {
     int xint = atoi(xval);
     int yint = atoi(yval);
     carLRcontrol(xint, yint);
-    return httpd_resp_send(req, NULL, 0);  
+
+    g_mutex.unlock();
+    timerEnable();
+    return httpd_resp_send(req, NULL, 0);
 }
 
 esp_err_t test_handler(httpd_req_t *req) {
@@ -172,13 +277,13 @@ static void initWifi() {
 
   WiFi.mode(WIFI_AP_STA);
   String Mac = WiFi.macAddress();
-  String SSID = "BeetleC:"+ Mac;
+  String SSID = "beetleC:"+ Mac;
   bool result = WiFi.softAP(SSID.c_str(), "12345678", 0, 0);
   if (!result){
     Serial.println("AP Config failed.");
   } else
   {
-    Serial.println("AP Config Success. AP NAME: " + String(SSID));
+    Serial.println("AP Config Success. AP NAME: " + String(SSID));  
   }
   IPAddress myIP = WiFi.softAPIP();
   Serial.print("AP IP address: ");
