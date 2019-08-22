@@ -2,7 +2,7 @@
 
 ### method description
 
-- ```carLRcontrol(int8_t left, int8_t right)```: 函数参数值就是左右电机的值。
+- ```carLRcontrol(int8_t left, int8_t right)```: this function will send two value to the BeetleC base.
 - ```esp_err_t control(httpd_req_t *req)```: callback function of http server, receive http requeset to control the beetleC base.
 - ```esp_err_t test_handler(httpd_req_t *req)```: send back a control page when some one access ```192.168.4.1/ctl``` which can send the control message.
 - ```static esp_err_t http_server_init()```: Http Server initialization. callback function will be set here.
