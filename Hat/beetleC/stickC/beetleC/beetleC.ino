@@ -178,7 +178,7 @@ void carControl(int8_t x, int8_t y) {
 
 }
 
-esp_err_t controlPage(httpd_req_t *req) {
+esp_err_t control(httpd_req_t *req) {
   resetCount();
   timerDisable();
   g_mutex.lock();
@@ -241,7 +241,7 @@ esp_err_t controlPage(httpd_req_t *req) {
     return httpd_resp_send(req, NULL, 0);
 }
 
-esp_err_t test_handler(httpd_req_t *req) {
+esp_err_t controlPage(httpd_req_t *req) {
     httpd_resp_set_type(req, "text/html");
     httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
     return httpd_resp_send(req, (const char *)ctlPage, 6463);
@@ -250,17 +250,17 @@ esp_err_t test_handler(httpd_req_t *req) {
 static esp_err_t http_server_init(){
     httpd_handle_t server;
 
-    httpd_uri_t hello_word = {
+    httpd_uri_t _controlPage = {
         .uri = "/ctl",
         .method = HTTP_GET,
-        .handler = test_handler,
+        .handler = controlPage,
         .user_ctx = NULL
     };
 
-    httpd_uri_t control = {
+    httpd_uri_t _control = {
         .uri = "/control",
         .method = HTTP_GET,
-        .handler = controlPage,
+        .handler = control,
         .user_ctx = NULL   
     };
   
@@ -268,13 +268,14 @@ static esp_err_t http_server_init(){
 
     ESP_ERROR_CHECK(httpd_start(&server, &http_options));
 
-    ESP_ERROR_CHECK(httpd_register_uri_handler(server, &hello_word));
-    ESP_ERROR_CHECK(httpd_register_uri_handler(server, &control));
+    ESP_ERROR_CHECK(httpd_register_uri_handler(server, &_controlPage));
+    ESP_ERROR_CHECK(httpd_register_uri_handler(server, &_control));
     return ESP_OK;
 }
 
 static void initWifi() {
 
+//  WiFi.onEvent(WiFiEvent);
   WiFi.mode(WIFI_AP_STA);
   String Mac = WiFi.macAddress();
   String SSID = "beetleC:"+ Mac;
