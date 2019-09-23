@@ -113,7 +113,7 @@ uint16_t fpm_getUserNum(void)
     res = fpm_sendAndReceive(200);
 
     if(res == ACK_SUCCESS && RxBuf[Q3] == ACK_SUCCESS) {
-        return RxBuf[Q2];
+        return FP.RxBuf[Q2];
     }
     else {
         return 0XFF;
@@ -173,7 +173,7 @@ uint8_t fpm_addUser(uint8_t userNum, uint8_t userPermission)
             res = fpm_sendAndReceive(3000);    //Third time
 
             if(res == ACK_SUCCESS) {
-                return RxBuf[Q3];
+                return FP.RxBuf[Q3];
             }
           }
         }
