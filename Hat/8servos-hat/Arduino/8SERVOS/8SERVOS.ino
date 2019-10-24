@@ -56,5 +56,5 @@ void loop() {
   {
     Servo_angle_set(i,180);     //
   }
-
+  delay(1000);
 }
