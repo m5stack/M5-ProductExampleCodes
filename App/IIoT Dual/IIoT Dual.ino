@@ -3,13 +3,11 @@
 bool ButtonA = false;
 bool ButtonC = false;
 // the setup routine runs once when M5StickC starts up
-void draw_ON(){
-  M5.Lcd.fillRect(60, 200, 10, 10, GREEN);
-}
-
 void setup(){
   // Initialize the M5StickC object
   M5.begin();
+  pinMode(15, OUTPUT);
+  pinMode(12, OUTPUT);
   M5.Lcd.setTextColor(GREEN, BLACK);
   M5.Lcd.setTextDatum(MC_DATUM);
   M5.Lcd.drawString("BASE26 RELAY", 160, 0, 4);
@@ -29,11 +27,13 @@ void loop() {
            ButtonA = true;
             M5.Lcd.fillRect(40, 195, 20, 20, WHITE);
             M5.Lcd.fillRect(45, 200, 10, 10, GREEN);
+            digitalWrite(15, HIGH);
             Serial.println("green"); 
        }else{
            ButtonA = false;
             M5.Lcd.fillRect(40, 195, 20, 20, WHITE);
             M5.Lcd.fillRect(45, 200, 10, 10, RED); 
+            digitalWrite(15, LOW);
             Serial.println("red"); 
        }
    }
@@ -42,11 +42,13 @@ void loop() {
           ButtonC = true;
           M5.Lcd.fillRect(245, 195, 20, 20, WHITE);
           M5.Lcd.fillRect(250, 200, 10, 10, GREEN);
+          digitalWrite(12, HIGH);
           Serial.println("green"); 
    }else{
           ButtonC = false;
           M5.Lcd.fillRect(245, 195, 20, 20, WHITE);
-          M5.Lcd.fillRect(250, 200, 10, 10, RED); 
+          M5.Lcd.fillRect(250, 200, 10, 10, RED);
+          digitalWrite(15, LOW);
           Serial.println("red"); 
    }
 }
