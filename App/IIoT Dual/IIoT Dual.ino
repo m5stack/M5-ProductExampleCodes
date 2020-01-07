@@ -3,10 +3,6 @@
 bool ButtonA = false;
 bool ButtonC = false;
 // the setup routine runs once when M5StickC starts up
-void draw_ON(){
-  M5.Lcd.fillRect(60, 200, 10, 10, GREEN);
-}
-
 void setup(){
   // Initialize the M5StickC object
   M5.begin();
