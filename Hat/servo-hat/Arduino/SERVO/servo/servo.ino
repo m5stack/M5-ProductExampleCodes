@@ -16,7 +16,7 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  for(i = COUNT_LOW; i < COUNT_HIGH; i = i + 100){  
+  for(int i = COUNT_LOW; i < COUNT_HIGH; i = i + 100){  
     ledcWrite(1, i);
     delay(50);
   }
