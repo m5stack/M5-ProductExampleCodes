@@ -1,0 +1,11 @@
+#######################################
+# Syntax Coloring Map For ESPHap
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+homekit_service_t	KEYWORD1
+homekit_characteristic_t	KEYWORD1
+homekit_value_t	KEYWORD1
