@@ -1,21 +1,20 @@
+/****************************************************************
+ * 
+ * This Example only for M5AtomEcho!
+ * 
+ * Arduino tools Setting 
+ * -board : M5StickC
+ * -Upload Speed: 115200 / 750000 / 1500000
+ * 
+****************************************************************/
 #include "M5Atom.h"
 #include <WiFi.h>
 #include <driver/i2s.h>
 #include <HTTPClient.h>
 #include "BaiduRest.h"
-#include "esp_spi_flash.h"
 
-/*
-const char *WifiSSID = "sorzz";
-const char *WifiPWD = "666999...";
-
-const char *WifiSSID = "cam";
-const char *WifiPWD = "12345678";
-
-const char *WifiSSID = "GTXYJ7F";
-const char *WifiPWD = "987632100";
-*/
-
+const char *WifiSSID = "SSID";
+const char *WifiPWD = "PASSWORD";
 
 #define CONFIG_I2S_BCK_PIN 19
 #define CONFIG_I2S_LRCK_PIN 33
@@ -71,52 +70,11 @@ bool InitI2SSpeakOrMic(int mode)
     return true;
 }
 
-String api_token;
 BaiduRest rest;
 uint8_t microphonedata0[1024 * 80];
 size_t byte_read = 0;
 int16_t *buffptr;
 uint32_t data_offset = 0;
-
-
-char *WiFiSSID = nullptr;
-char *WiFiPasswd = nullptr;
-int getWifiInfFromFlash()
-{
-    uint8_t databuff[128];
-    spi_flash_read(0x3ff000,databuff,128);
-    //Serial.printf("%02X:%02X\r\n", databuff[0],databuff[50]);
-    if(( databuff[0] >= 50 )||( databuff[50] >= 50 ))return -1;
-
-    WiFiSSID    = (char *)calloc( databuff[0] + 1 , sizeof(char));
-    WiFiPasswd  = (char *)calloc( databuff[50] + 1, sizeof(char));
-
-    uint8_t subdata = 0;
-    for (size_t i = 0; i < databuff[0]; i++)
-    {
-        subdata += databuff[1+i];
-        WiFiSSID[i] = databuff[1+i];
-    }
-    //Serial.printf("%02X:%02X\n", databuff[databuff[0] + 1 ],subdata);
-    if( subdata != databuff[databuff[0] + 1 ]) return -1;
-
-    subdata = 0;
-    for (size_t i = 0; i < databuff[50]; i++)
-    {
-        subdata += databuff[51+i];
-        WiFiPasswd[i] = databuff[51+i];
-    }
-    
-    //Serial.printf("%02X:%02X\n", databuff[databuff[50] + 51 ],subdata);
-    if( subdata != databuff[ databuff[50] + 51 ]) return -1;
-
-    WiFiSSID[databuff[0] + 1] = 0x00;
-    WiFiPasswd[databuff[50] + 1] = 0x00;
-
-    Serial.print("SSID:"); Serial.println(WiFiSSID);
-
-    return 0;
-}
 
 void setup()
 {
@@ -127,19 +85,10 @@ void setup()
     InitI2SSpeakOrMic(MODE_SPK);
     delay(100);
 
-    if( getWifiInfFromFlash() != 0 )
-    {
-        M5.dis.drawpix(0, CRGB(0, 128, 0));
-        Serial.println("WiFi Info read Error");
-        while(1);
-    }
-    Serial.println(WiFiSSID);
-    Serial.println(WiFiPasswd);
-
     Serial.println("Connecting Wifi");
     WiFi.mode(WIFI_STA);
     WiFi.setSleep(false);
-    WiFi.begin(WiFiSSID, WiFiPasswd);
+    WiFi.begin(WifiSSID, WifiPWD);
 
     M5.dis.drawpix(0, CRGB(0, 128, 0));
     size_t bytes_written;
@@ -154,8 +103,7 @@ void setup()
 
     Serial.println("Connected.");
 
-    rest.settoken("your_token");// <-------------------------replace your token by M5Buner----------------------
-    //rest.gettoken();
+    rest.settoken("YOUR-TOKEN");<------------------------------------REPLACE YOUR_TOKEN-------------------
 
 }
 
