@@ -103,7 +103,7 @@ void setup()
 
     Serial.println("Connected.");
 
-    rest.settoken("YOUR-TOKEN");<------------------------------------REPLACE YOUR_TOKEN-------------------
+    rest.settoken("YOUR-TOKEN");//<------------------------------------REPLACE YOUR_TOKEN-------------------
 
 }
 
