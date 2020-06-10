@@ -49,8 +49,7 @@ void setup() {
     SPI.begin(23,33,19,-1);
     if(!SD.begin(-1, SPI, 40000000)){
       Serial.println("initialization failed!");
-    }
-    Serial.println("open file successful");  
+    } 
     sdcard_type_t Type = SD.cardType();
 
 	  Serial.printf("SDCard Type = %d \r\n",Type);
