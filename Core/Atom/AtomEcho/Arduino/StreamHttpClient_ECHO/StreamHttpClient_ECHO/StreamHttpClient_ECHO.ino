@@ -5,8 +5,8 @@
 #include "AudioGeneratorMP3.h"
 #include "AudioOutputI2S.h"
 
-const char *SSID = "M5-5G";
-const char *PASSWORD = "Office@888888";
+const char *SSID = "";
+const char *PASSWORD = "";
 
 const char *URL="http://gitfile.oss-cn-beijing.aliyuncs.com/11-fanfare.mp3";
 
