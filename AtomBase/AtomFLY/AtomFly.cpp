@@ -121,7 +121,7 @@ int AtomFly::initFly(void)
     return 0;
 }
 
-void AtomFly::WritePWN(uint8_t Motor,uint8_t pwmData)
+void AtomFly::WritePWM(uint8_t Motor,uint8_t pwmData)
 {
     ledcWrite(Motor,pwmData);
 }

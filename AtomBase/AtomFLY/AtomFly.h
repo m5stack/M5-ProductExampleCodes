@@ -97,7 +97,7 @@ public:
     void getAhrsData(float *pitch, float *roll, float *yaw);
     void getAttitude(double *pitch, double *roll);
 
-    void WritePWN(uint8_t,uint8_t);
+    void WritePWM(uint8_t,uint8_t);
     void WriteAllPWM(uint8_t);
 
     uint16_t readTOF();

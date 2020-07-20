@@ -77,46 +77,46 @@ void loop()
     switch (mode)
     {
     case 0:
-        fly.WritePWN(AtomFly::kMotor_A, 0);
-        fly.WritePWN(AtomFly::kMotor_B, 0);
-        fly.WritePWN(AtomFly::kMotor_C, 0);
-        fly.WritePWN(AtomFly::kMotor_D, 0);
+        fly.WritePWM(AtomFly::kMotor_A, 0);
+        fly.WritePWM(AtomFly::kMotor_B, 0);
+        fly.WritePWM(AtomFly::kMotor_C, 0);
+        fly.WritePWM(AtomFly::kMotor_D, 0);
         break;
     case 1:
-        fly.WritePWN(AtomFly::kMotor_A, 100);
-        fly.WritePWN(AtomFly::kMotor_B, 0);
-        fly.WritePWN(AtomFly::kMotor_C, 0);
-        fly.WritePWN(AtomFly::kMotor_D, 0);
+        fly.WritePWM(AtomFly::kMotor_A, 100);
+        fly.WritePWM(AtomFly::kMotor_B, 0);
+        fly.WritePWM(AtomFly::kMotor_C, 0);
+        fly.WritePWM(AtomFly::kMotor_D, 0);
         break;
     case 2:
-        fly.WritePWN(AtomFly::kMotor_A, 0);
-        fly.WritePWN(AtomFly::kMotor_B, 100);
-        fly.WritePWN(AtomFly::kMotor_C, 0);
-        fly.WritePWN(AtomFly::kMotor_D, 0);
+        fly.WritePWM(AtomFly::kMotor_A, 0);
+        fly.WritePWM(AtomFly::kMotor_B, 100);
+        fly.WritePWM(AtomFly::kMotor_C, 0);
+        fly.WritePWM(AtomFly::kMotor_D, 0);
         break;
     case 3:
-        fly.WritePWN(AtomFly::kMotor_A, 0);
-        fly.WritePWN(AtomFly::kMotor_B, 0);
-        fly.WritePWN(AtomFly::kMotor_C, 100);
-        fly.WritePWN(AtomFly::kMotor_D, 0);
+        fly.WritePWM(AtomFly::kMotor_A, 0);
+        fly.WritePWM(AtomFly::kMotor_B, 0);
+        fly.WritePWM(AtomFly::kMotor_C, 100);
+        fly.WritePWM(AtomFly::kMotor_D, 0);
         break;
     case 4:
-        fly.WritePWN(AtomFly::kMotor_A, 0);
-        fly.WritePWN(AtomFly::kMotor_B, 0);
-        fly.WritePWN(AtomFly::kMotor_C, 0);
-        fly.WritePWN(AtomFly::kMotor_D, 100);
+        fly.WritePWM(AtomFly::kMotor_A, 0);
+        fly.WritePWM(AtomFly::kMotor_B, 0);
+        fly.WritePWM(AtomFly::kMotor_C, 0);
+        fly.WritePWM(AtomFly::kMotor_D, 100);
         break;
     case 5:
-        fly.WritePWN(AtomFly::kMotor_A, 100);
-        fly.WritePWN(AtomFly::kMotor_B, 100);
-        fly.WritePWN(AtomFly::kMotor_C, 100);
-        fly.WritePWN(AtomFly::kMotor_D, 100);
+        fly.WritePWM(AtomFly::kMotor_A, 100);
+        fly.WritePWM(AtomFly::kMotor_B, 100);
+        fly.WritePWM(AtomFly::kMotor_C, 100);
+        fly.WritePWM(AtomFly::kMotor_D, 100);
         break;
     default:
-        fly.WritePWN(AtomFly::kMotor_A, 0);
-        fly.WritePWN(AtomFly::kMotor_B, 0);
-        fly.WritePWN(AtomFly::kMotor_C, 0);
-        fly.WritePWN(AtomFly::kMotor_D, 0);
+        fly.WritePWM(AtomFly::kMotor_A, 0);
+        fly.WritePWM(AtomFly::kMotor_B, 0);
+        fly.WritePWM(AtomFly::kMotor_C, 0);
+        fly.WritePWM(AtomFly::kMotor_D, 0);
         break;
     }
     count ++;
