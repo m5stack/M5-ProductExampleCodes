@@ -16,6 +16,7 @@ private:
 
     uint16_t _win_x_pos = 0,_win_y_pos = 0,_win_w = 320,_win_h = 240;
     uint16_t _font_x_size = 6,_font_y_size = 8;
+    uint8_t  _fontSize = 0;
     uint16_t _line_x_limit = 53,_line_y_limit = 30;
 
 public:

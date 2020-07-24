@@ -29,6 +29,17 @@ void TFTTerminal::setGeometry(uint16_t x, uint16_t y, uint16_t w, uint16_t h )
     _line_y_limit = _win_h / _font_y_size;
 }
 
+void TFTTerminal::setFontsize(uint8_t size)
+{
+    size = ( size == 0 ) ? 1 : size;
+    _font_x_size = 5 * size ;
+    _font_y_size = 6 * size ;
+    _fontSize = size;
+
+    _line_x_limit = _win_w / _font_x_size;
+    _line_y_limit = _win_h / _font_y_size;
+}
+
 size_t TFTTerminal::write(uint8_t chardata)
 {
     
@@ -78,7 +89,7 @@ size_t TFTTerminal::write(uint8_t chardata)
     dispos = dispos % 60;
 
     _dis_buff_ptr->setTextColor(_color);
-    _dis_buff_ptr->setTextSize(0);
+    _dis_buff_ptr->setTextSize(_fontSize);
 
     if( flush_page_flag )
     {
@@ -86,7 +97,7 @@ size_t TFTTerminal::write(uint8_t chardata)
 
         for (size_t i = 0; i < _line_y_limit; i++)
         {
-            _dis_buff_ptr->drawString((char *)discharbuff[(dispos + i) % 60], 0, i * 8);
+            _dis_buff_ptr->drawString((char *)discharbuff[(dispos + i) % 60], 0, i * _font_y_size);
         }
     }
     else
@@ -139,12 +150,12 @@ size_t TFTTerminal::write(const uint8_t *buffer, size_t size)
     dispos = dispos % 60;
 
     _dis_buff_ptr->setTextColor(_color);
-    _dis_buff_ptr->setTextSize(0);
+    _dis_buff_ptr->setTextSize(_fontSize);
     _dis_buff_ptr->fillSprite(_bkcolor);
     //_dis_buff_ptr->fillRect(_win_x_pos, _win_y_pos, _win_w, _win_h, _bkcolor);
     for (size_t i = 0; i < _line_y_limit; i++)
     {
-        _dis_buff_ptr->drawString((char *)discharbuff[(dispos + i) % 60], 0, i * 8);
+        _dis_buff_ptr->drawString((char *)discharbuff[(dispos + i) % 60], 0, i * _font_y_size);
     }
     _dis_buff_ptr->pushSprite(_win_x_pos, _win_y_pos);
     return 1;
