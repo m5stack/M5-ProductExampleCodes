@@ -1,3 +1,6 @@
+//Set the DIP switch to 5 and 13
+//and the screen will display the signal strength and network access status
+
 #include <M5Stack.h>
 #include <stdint.h>
 #include <vector>
@@ -363,23 +366,6 @@ void loop()
 
   delay(500);
   M5.update();
-  if( M5.BtnA.wasPressed())
-  {
-
-    AddMsg("ATD17862872755;\r\n", kQUERY_MT, 1000, 1000);
-    while ((readSendState(0) == kSendReady) || (readSendState(0) == kSending) || (readSendState(0) == kWaitforMsg))delay(50);
-    Serial.printf("Read state = %d \n", readSendState(0));
-    readstr = ReadMsgstr(0).c_str();
-    Serial.print(readstr);
-    while(1)
-    {
-      M5.update();
-      if( M5.BtnA.wasPressed()) break;
-      delay(100);
-    }
-    EraseFirstMsg();
-    AddMsg("AT+CHUP\r\n", kASSIGN_MO, 1000, 1000);  
-  }
 
   // put your main code here, to run repeatedly:
 }

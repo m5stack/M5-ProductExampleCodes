@@ -1,3 +1,8 @@
+//Set the DIP switch to 5 and 13
+//and the screen will display the signal strength and network access status
+//press buttonA to dial phonenumber
+//ATD00000000000 is phone number, you can change 
+
 #include <M5Stack.h>
 #include <stdint.h>
 #include <vector>
@@ -366,7 +371,7 @@ void loop()
 	if( M5.BtnA.wasPressed())
 	{
 
-    AddMsg("ATD17862872755;\r\n", kQUERY_MT, 1000, 1000);
+    AddMsg("ATD00000000000;\r\n", kQUERY_MT, 1000, 1000);
   	while ((readSendState(0) == kSendReady) || (readSendState(0) == kSending) || (readSendState(0) == kWaitforMsg))delay(50);
 		Serial.printf("Read state = %d \n", readSendState(0));
 		readstr = ReadMsgstr(0).c_str();
