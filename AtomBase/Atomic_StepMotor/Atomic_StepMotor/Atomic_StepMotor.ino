@@ -1,3 +1,6 @@
+//Press button the stepmotor will turn 5000 steps clockwise then turn 5000 steps anti-clockwise
+
+
 #include <M5Atom.h>
 #include "StepperDriver.h"
 
