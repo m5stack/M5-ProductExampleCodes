@@ -73,7 +73,7 @@ void Move_stop(int8_t Speed)
 
 void Servo_angle(uint8_t Servo_ch, uint8_t degree)
 {
-  degree = min(180, int(degree));
+  degree = min(90, int(degree));
   degree = max(0, int(degree));
   Send_iic((Servo_ch - 1) | 0x10 ,int(degree));
 }
