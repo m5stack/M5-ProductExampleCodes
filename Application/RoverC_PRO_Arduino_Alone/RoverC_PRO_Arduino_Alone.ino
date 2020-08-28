@@ -13,22 +13,26 @@ void setup(){
   M5.Lcd.printf("RoverC");
 
   RoverC_Init();
+  Move_stop(100);
 }
 
 // the loop routine runs over and over again forever
 void loop() {
-
-  
-  Move_forward(100);
-  delay(2000);
-  Move_back(100);
-  delay(2000);
-  Move_turnleft(100);
-  delay(2000);
-  Move_turnright(100);
-  delay(2000);
-  Servo_angle(1, 90);
-  delay(1000);
-  Servo_angle(1, 0);
-  delay(1000);
+  M5.update();
+   if (M5.BtnA.wasReleased()) {
+      delay(1500); 
+      Servo_angle(1, 90);
+      delay(1000);
+      Move_back(50);
+      delay(2000);
+      Move_turnleft(30);
+      delay(2000);
+      Move_turnright(30);
+      delay(2000);
+      Move_forward(50);
+      delay(2000);
+      Move_stop(100);
+      Servo_angle(1, 0);
+      delay(1000); 
+  }
 }
