@@ -1,0 +1,7 @@
+{
+    "sketch": "voltmeter.ino",
+    "board": "esp32:esp32:m5stack-core-esp32",
+    "configuration": "FlashMode=dio,FlashFreq=80,PartitionScheme=default,UploadSpeed=921600,DebugLevel=none",
+    "port": "/dev/ttyUSB0",
+    "output": "build"
+}
