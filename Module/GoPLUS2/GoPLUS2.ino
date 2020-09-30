@@ -48,6 +48,9 @@ void Motor()
       goPlus.Motor_write_speed(MOTOR_NUM1, -127);
       goPlus.Motor_write_speed(MOTOR_NUM0, -127);
       delay(1000);
+      goPlus.Motor_write_speed(MOTOR_NUM1, 0);
+      goPlus.Motor_write_speed(MOTOR_NUM0, 0);
+      delay(1000);
       M5.Lcd.fillRect(0, 60, 320, 180, TFT_BLACK);
       M5.Lcd.setCursor(20, 60, 4);
       M5.Lcd.println("Motor Speed: 127");
