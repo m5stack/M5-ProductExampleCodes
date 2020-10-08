@@ -1,12 +1,13 @@
 #include <M5Stack.h>
 #include "Free_Fonts.h" 
 #define MIC_Unit 36
+#define MAX_LEN 320
+#define X_OFFSET 0
+#define Y_OFFSET 100
+#define X_SCALE 1
 
 static void draw_waveform() {
-  #define MAX_LEN 320
-  #define X_OFFSET 0
-  #define Y_OFFSET 100
-  #define X_SCALE 1
+
   static int16_t val_buf[MAX_LEN] = {0};
   static int16_t pt = MAX_LEN - 1;
   int micValue = analogRead(MIC_Unit);
