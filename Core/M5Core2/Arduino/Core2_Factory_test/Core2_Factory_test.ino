@@ -1,10 +1,11 @@
 #include <M5Core2.h>
 #include <driver/i2s.h>
 #include "fft.h"
-#include <Fonts/EVA_20px.h>
-#include <Fonts/EVA_11px.h>
+#include "Fonts/EVA_20px.h"
+#include "Fonts/EVA_11px.h"
 #include "line3D.h"
-#include <WiFi.h>
+#include "Wire.h"
+#include "WiFi.h"
 
 extern const unsigned char CoverImage[21301];
 extern const unsigned char clockImage[18401];
@@ -16,7 +17,7 @@ extern const unsigned char imageMenu[14900];
 extern const unsigned char previewR[120264];
 extern const unsigned char wifiSacnImage[28123];
 extern const unsigned char TimerAppImage[59165];
-extern const unsigned char SettingAppImage[50683];
+extern const unsigned char SettingAppImage[50771];
 extern const unsigned char bibiSig[8820];
 
 extern const unsigned char image_rect_0006[1394];
@@ -353,14 +354,19 @@ void CoverScrollText(String strNext,uint32_t color)
 void sysErrorSkip()
 {
     uint32_t bkColor16 = Disbuff.color565(0x22,0x22,0x22); 
+    //Disbuff.drawJpg(CoverImage,21301,0,0,320,240,0,0);
+    //Disbuff.fillRect(bkColor16)
     Disbuff.setFreeFont(&EVA_20px);
+    //Disbuff.setTextFont(1);
     Disbuff.setTextSize(1);
     Disbuff.setTextColor(Disbuff.color565(0xff,0,0),bkColor16);
     Disbuff.setTextDatum(TC_DATUM);
     Disbuff.pushInSprite(&DisCoverScrollbuff,0,0,320,60,0,150);
-    Disbuff.drawString("Touch to Skip",160,200);
+    Disbuff.setCursor(94,220);
+    Disbuff.print("Touch to Skip");
+    //Disbuff.drawString("Touch to Skip",160,200);
     Disbuff.pushSprite(0,0);
-    M5.Axp.SetLDOEnable(3,false);
+    //M5.Axp.SetLDOEnable(3,false);
 
     HotZone_t toucZone(0,0,320,280);
 
@@ -398,8 +404,8 @@ int scani2caddr()
 {
     for (int i = 0; i < 120; i++)
     {
-        Wire.beginTransmission(i);
-        if (Wire.endTransmission() == 0)
+        Wire1.beginTransmission(i);
+        if (Wire1.endTransmission() == 0)
         {
             Serial.printf("%02X   |FIND", i);
             Serial.println(".");
@@ -443,8 +449,8 @@ int checkI2cAddr()
     do{
         lastptr = lastptr->nextPtr;
         Serial.printf("Addr:0x%02X - Name:%s\r\n",lastptr->addr,lastptr->Name.c_str());
-        Wire.beginTransmission( lastptr->addr );
-        if ( Wire.endTransmission() == 0 )
+        Wire1.beginTransmission( lastptr->addr );
+        if ( Wire1.endTransmission() == 0 )
         {
             String log = "I2C " + lastptr->Name + " Found";
             CoverScrollText(log,M5.Lcd.color565(SUCCE_COLOR));
@@ -1596,6 +1602,8 @@ void AppTimer()
         }
         TimerRectbuff.pushSprite(7,36);
 
+        
+
         timeNow = millis();
 
         min = timeSetting / 60000 % 60;
@@ -1701,19 +1709,56 @@ void AppTimer()
 }
 void TFTTest()
 {
-    M5.Lcd.fillRect(0,0,320,240,TFT_RED);
-    delay(1000);
-    M5.Lcd.fillRect(0,0,320,240,TFT_GREEN);
-    delay(1000);
-    M5.Lcd.fillRect(0,0,320,240,TFT_BLUE);
-    delay(1000);
+    HotZone Btn(0,0,320,280);
+    TouchPoint_t pos = M5.Touch.getPressPoint();
+
+    int colorIndex = 0;
+    uint32_t colorList[4][2] = {{TFT_RED ,  TFT_RED},
+                                {TFT_GREEN ,TFT_GREEN},
+                                {TFT_BLUE,  TFT_BLUE},
+                                {TFT_WHITE, TFT_BLACK}};
+
+    M5.Lcd.fillRect(0,0,320,240,colorList[colorIndex][1]);
+    M5.Lcd.drawRect(0,0,320,240,colorList[colorIndex][0]);
+
+    i2sQueueMsg_t msg;
+
+    msg.state = MODE_SPK;
+    msg.audioPtr = (void*)bibiSig;
+    msg.audioSize = 8820;
+
+    bool pressed = true;
+    while(1)
+    {
+        pos = M5.Touch.getPressPoint();
+        
+        if(( pos.x != -1 )&&( pressed == false ))
+        {
+            pressed = true;
+
+            msg.state = MODE_SPK;
+            msg.audioPtr = (void*)bibiSig;
+            msg.audioSize = 8820;
+
+            xQueueSend(i2sstateQueue,&msg,(TickType_t)portMAX_DELAY);
+            colorIndex++;
+            if( colorIndex == 4 ) break;
+
+            M5.Lcd.fillRect(0,0,320,240,colorList[colorIndex][1]);
+            M5.Lcd.drawRect(0,0,320,240,colorList[colorIndex][0]);
+        }
+        else if( pos.x == -1 )
+        {
+            pressed = false;
+        }
+
+    }
+
     Disbuff.pushSprite(0,0);
 }
 void AppSetting()
 {
-    //SettingAppImage
-    Disbuff.drawJpg(SettingAppImage,50683,0,0,320,240);
-
+    Disbuff.drawJpg(SettingAppImage,50771,0,0,320,240);
 
     HotZone IOBtn(7,99,104,154);
     HotZone MoterBtn(113,99,210,154);
@@ -2079,8 +2124,9 @@ void sysInitCheck()
 
 void setup()
 {
-    M5.begin(true, true, true, true);
+    M5.begin(true, true, true, false);
     Disbuff.createSprite(320, 240);
+    
     DisCoverScrollbuff.createSprite(320,60);
 
     addI2cDevice("Axp192",0x34);
@@ -2110,8 +2156,8 @@ void setup()
     xTaskCreatePinnedToCore(i2s_task, "i2s_task", 4096, NULL, 3, NULL, 0);
 
     M5.Axp.SetLDOEnable(3,true);
-    CoverScrollText("Moter Test",M5.Lcd.color565(SUCCE_COLOR));
-    delay(100);
+    CoverScrollText("Motor Test",M5.Lcd.color565(SUCCE_COLOR));
+    delay(150);
     M5.Axp.SetLDOEnable(3,false); 
 
     M5.Axp.SetLed(1);
