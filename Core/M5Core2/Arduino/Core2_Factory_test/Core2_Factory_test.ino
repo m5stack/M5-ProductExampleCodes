@@ -1335,7 +1335,7 @@ void AppImage()
 void APPSleep()
 {
     delay(500);
-    M5.Axp.SetSleep();
+    M5.Axp.PowerOff();
 }
 
 void AppWifi()
