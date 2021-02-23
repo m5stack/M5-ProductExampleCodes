@@ -27,7 +27,8 @@ void setup() {
   }
   M5.Lcd.clear(BLACK);
   M5.Lcd.println("ENV Unit test...");
-
+  delay(100);
+  M5.Lcd.fillRect(0, 0, 340, 30, BLACK);
 }
 
 void loop() {
