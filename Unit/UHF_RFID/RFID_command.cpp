@@ -8,23 +8,21 @@
   用于询问硬件版本
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-UBYTE RFID_Query_hardware_version(UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+String UHF_RFID::Query_hardware_version()
 {
-  RFID_Sendcommand(0);
+  Sendcommand(0);
+  Delay(20);
+  Readcallback();
 
-  RFID_Readcallback();
-
-
-  if (RFID_Scanwarning())
+  if (DelayScanwarning())
   {
-    return 0;
+    return DATA_Str_M5led;
   }
   else
   {
-    RFID_Return_to_convert(0);
-    M5.Lcd.drawString(DATA_Str_M5led.substring(6, 21), Xpoint, Ypoint, font_size);
+    Return_to_convert(0);
 
-    return 1;
+    return DATA_Str_M5led.substring(6, 21);
   }
 }
 
@@ -32,23 +30,21 @@ UBYTE RFID_Query_hardware_version(UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
    Used to ask about software versions
   用于询问软件版本
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_Query_software_version(UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+String UHF_RFID::Query_software_version()
 {
-  RFID_Sendcommand(1);
+  Sendcommand(1);
+  Delay(20);
+  Readcallback();
 
-  RFID_Readcallback();
-
-
-  if (RFID_Scanwarning())
+  if (DelayScanwarning())
   {
-    return 0;
+    return DATA_Str_M5led;
   }
   else
   {
-    RFID_Return_to_convert(0);
-    M5.Lcd.drawString(DATA_Str_M5led.substring(6, 12), Xpoint, Ypoint, font_size);
+    Return_to_convert(0);
 
-    return 1;
+    return DATA_Str_M5led.substring(6, 12);
   }
 }
 
@@ -56,23 +52,21 @@ UBYTE RFID_Query_software_version(UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
    Used to ask for RFID manufacturer information
   用于询问RFID制造商信息
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_Inquire_manufacturer(UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+String UHF_RFID::Inquire_manufacturer()
 {
-  RFID_Sendcommand(2);
+  Sendcommand(2);
+  Delay(20);
+  Readcallback();
 
-  RFID_Readcallback();
-
-
-  if (RFID_Scanwarning())
+  if (DelayScanwarning())
   {
-    return 0;
+    return DATA_Str_M5led;
   }
   else
   {
-    RFID_Return_to_convert(0);
-    M5.Lcd.drawString(DATA_Str_M5led.substring(6, 13), Xpoint, Ypoint, font_size);
+    Return_to_convert(0);
 
-    return 1;
+    return DATA_Str_M5led.substring(6, 13);
   }
 }
 
@@ -80,36 +74,37 @@ UBYTE RFID_Inquire_manufacturer(UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
    Used for a single polling instruction
   用于单次轮询指令
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_A_single_poll_of_instructions(UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+CardpropertiesInfo UHF_RFID::A_single_poll_of_instructions()
 {
   UBYTE a[5] = {0xBB, 0x02, 0x22, 0x00, 0x11};
+  CardpropertiesInfo card;
 
-  RFID_Sendcommand(3);
+  Sendcommand(3);
+  Delay(50);
+  Readcallback();
 
-  RFID_Readcallback();
-
-
-  if (RFID_Scanwarning())
+  if (DelayScanwarning())
   {
-    return 0;
+    card._RSSI = "";
+    card._PC = "";
+    card._EPC = "";
+    card._CRC = "";
+    card._ERROR = DATA_Str_Serial;
+    return card;
   }
   else
   {
-    if (RFID_Verify_the_return(a, 5))
+    if (Verify_the_return(a, 5))
     {
-      RFID_Return_to_convert(1);
+      Return_to_convert(1);
 
-      M5.Lcd.drawString("RSSI :", Xpoint, Ypoint , font_size); //RSSI输入端信号强度
-      M5.Lcd.drawString("PC :", Xpoint, Ypoint + 20, font_size); //PC电脑编号
-      M5.Lcd.drawString("EPC :", Xpoint, Ypoint + 40, font_size); //EPC编号
-      M5.Lcd.drawString("CRC :", Xpoint, Ypoint + 60, font_size); //CRC信号灵敏度
+      card._RSSI = DATA_Str_M5led.substring(10, 12);
+      card._PC = DATA_Str_M5led.substring(12, 16);
+      card._EPC = DATA_Str_M5led.substring(16, 40);
+      card._CRC = DATA_Str_M5led.substring(40, 44);
+      card._ERROR = "";
 
-      M5.Lcd.drawString(DATA_Str_M5led.substring(10, 12), Xpoint + 45, Ypoint , font_size); //RSSI输入端信号强度
-      M5.Lcd.drawString(DATA_Str_M5led.substring(12, 16), Xpoint + 30, Ypoint + 20, font_size); //PC电脑编号
-      M5.Lcd.drawString(DATA_Str_M5led.substring(16, 40), Xpoint + 40, Ypoint + 40, font_size); //EPC编号
-      M5.Lcd.drawString(DATA_Str_M5led.substring(40, 44), Xpoint + 40, Ypoint + 60, font_size); //CRC信号灵敏度
-
-      return 1;
+      return card;
     }
   }
 }
@@ -121,115 +116,104 @@ UBYTE RFID_A_single_poll_of_instructions(UWORD Xpoint, UWORD Ypoint, UBYTE font_
   用于多次轮询指令
   cycle_nub: 最好在0-100次内，最大是65535次但是次数太多会造成内存溢出
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_Multiple_polling_instructions(UWORD cycle_nub, UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+ManyInfo UHF_RFID::Multiple_polling_instructions(UWORD cycle_nub)
 {
+  free(this->card);
+
   UWORD a = 0x00;
   UWORD b = 0x00;
-  UBYTE c = 0;
   UBYTE d = 0;
   UWORD i_nub = 0;
   String data_mp = "";
   String data_tpy = "";
-  UBYTE e[5] = {0xBB, 0x02, 0x22, 0x00, 0x11};
 
-  RFID_Copy_command_library(4);
-  RFID_ToHex(cycle_nub, 6, 7);
-  RFID_Check_bit_accumulation();
-  RFID_Send_the_modified_command();
+  Copy_command_library(4);
+  ToHex(cycle_nub, 6, 7);
+  Check_bit_accumulation();
+  Send_the_modified_command();
 
-
-  RFID_Readcallback();
-
-
-  i_nub = DATA_I_NUB + 1;
-
-  if (RFID_Scanwarning())
+  for (int i = 0; i != cycle_nub; i++)
   {
-    return 0;
-  }
-  else
-  {
-    if (RFID_Verify_the_return(e, 5))
+    Readcallback();
+
+    i_nub = DATA_I_NUB + 1;
+
+    Return_to_convert(1);
+
+    while (i_nub > 0)
     {
-      RFID_Return_to_convert(1);
-
-      M5.Lcd.drawString("EPC:", Xpoint + 5, Ypoint, font_size); //EPC编号
-      M5.Lcd.drawString("RSSI:", Xpoint + 190, Ypoint, font_size); //RSSI输入端信号强度
-      M5.Lcd.drawString("PC:", Xpoint + 240, Ypoint, font_size); //PC电脑编号
-      M5.Lcd.drawString("CRC:", Xpoint + 280, Ypoint, font_size); //CRC信号灵敏度
-
-      while (i_nub > 0)
+      if (DATA_I[i_nub - 1] == 0x7E)
       {
-        if (DATA_I[i_nub - 1] == 0x7E)
-        {
-          b = i_nub - 1;
+        b = i_nub - 1;
 
-        }
-        if (DATA_I[i_nub - 1] == 0xBB && DATA_I[i_nub] == 0x02)
-        {
-          a = i_nub - 1;
-
-        }
-        if (b - a == 0x17   )
-        {
-          if (data_mp.indexOf(DATA_Str_M5led.substring(a * 2 + 16, a * 2 + 40)) == -1)
-          {
-            data_tpy = DATA_Str_M5led.substring(a * 2 + 16, a * 2 + 40);
-            if (data_tpy.indexOf("bb01") == -1 && data_tpy.indexOf("bb02") == -1)   //To prevent the mixing of EPC errors, should only be limited to the beginning of 0xbb command 防止混入错误的EPC，应bb仅限命令开头
-            {
-              M5.Lcd.drawString(DATA_Str_M5led.substring(a * 2 + 10, a * 2 + 12), Xpoint + 200, Ypoint + 20 + d * 15, font_size);//RSSI input signal strength RSSI输入端信号强度
-              M5.Lcd.drawString(DATA_Str_M5led.substring(a * 2 + 12, a * 2 + 16), Xpoint + 230, Ypoint + 20 + d * 15, font_size); //PC No.  PC电脑编号
-              M5.Lcd.drawString(DATA_Str_M5led.substring(a * 2 + 16, a * 2 + 40), Xpoint , Ypoint + 20 + d * 15, font_size); //EPC Numbers  EPC编号
-              M5.Lcd.drawString(DATA_Str_M5led.substring(a * 2 + 40, a * 2 + 44), Xpoint + 280, Ypoint + 20 + d * 15, font_size);//CRC signal sensitivity  CRC信号灵敏度
-
-
-              data_mp += DATA_Str_M5led.substring(a * 2 + 16, a * 2 + 40);
-              d += 1;
-            }
-          }
-          a = 0; b = 0;
-        }
-        i_nub--;
       }
-      return 1;
+      if (DATA_I[i_nub - 1] == 0xBB && DATA_I[i_nub] == 0x02)
+      {
+        a = i_nub - 1;
+
+      }
+      if (b - a == 0x17   )
+      {
+        if (data_mp.indexOf(DATA_Str_M5led.substring(a * 2 + 16, a * 2 + 40)) == -1)
+        {
+          data_tpy = DATA_Str_M5led.substring(a * 2 + 10, a * 2 + 44);
+          if (data_tpy.indexOf("bb01") == -1 )   //To prevent the mixing of EPC errors, should only be limited to the beginning of 0xbb command 防止混入错误的EPC，应bb仅限命令开头
+          {
+            data_mp += DATA_Str_M5led.substring(a * 2 + 10, a * 2 + 44);
+            d += 1;
+          }
+        }
+        a = 0; b = 0;
+      }
+      i_nub--;
     }
+    a = 0; b = 0;
   }
+
+  this->card = (CardpropertiesInfo *)calloc(d, sizeof(CardpropertiesInfo));
+
+  for (int i = 0; i != d; i++ )
+  {
+    this->card[i]._RSSI = data_mp.substring(i * 34 + 0, i * 34 + 2);
+    this->card[i]._PC = data_mp.substring(i * 34 + 2, i * 34 + 6);
+    this->card[i]._EPC = data_mp.substring(i * 34 + 6, i * 34 + 30);
+    this->card[i]._CRC = data_mp.substring(i * 34 + 30, i * 34 + 34);
+    this->card[i]._ERROR = "";
+  }
+  ManyInfo Cards = {d, this->card};
+
+  return Cards;
+
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    Used to stop multiple polling instructions
   用于停止多次轮询指令
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_Stop_the_multiple_poll_directive( UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+String UHF_RFID::Stop_the_multiple_poll_directive()
 {
   UBYTE a[8] = {0xBB, 0x01, 0x28, 0x00, 0x01, 0x00, 0x2A, 0x7E};
 
+  Sendcommand(5);
+  Delay(100);
+  Readcallback();
 
-  RFID_Sendcommand(5);
-
-  RFID_Readcallback();
-
-
-  if (RFID_Scanwarning())
+  if (DelayScanwarning())
   {
-    return 0;
+    return "";
   }
   else
   {
 
-    if (RFID_Verify_the_return(a, 8))
+    if (Verify_the_return(a, 8))
     {
-      M5.Lcd.drawString("Stop OK", Xpoint, Ypoint, font_size);
-      return 1;
+      return "Stop OK";
     }
     else
     {
-      M5.Lcd.drawString("Stop Unsuccess", Xpoint, Ypoint, font_size);
-      return 0;
+      return "Stop Unsuccess";
     }
-
   }
-
 }
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    Use to set the SELECT parameter instruction
@@ -262,43 +246,38 @@ UBYTE RFID_Stop_the_multiple_poll_directive( UWORD Xpoint, UWORD Ypoint, UBYTE f
   Mask： 长度 MaskLen:	0x60(6 个 word，96bits)
   Truncate:	0x00(0x00 是 Disable truncation，0x80 是 Enable truncation)
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_Set_the_select_parameter_directive(String str_epc, UBYTE SelParam, UDOUBLE Ptr, UBYTE MaskLen, UBYTE Truncate, UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+String UHF_RFID::Set_the_select_parameter_directive(String str_epc, UBYTE SelParam, UDOUBLE Ptr, UBYTE MaskLen, UBYTE Truncate)
 {
   UBYTE b[8] = {0xBB, 0x01, 0x0C, 0x00, 0x01, 0x00, 0x0E, 0x7E};
 
-  RFID_Copy_command_library(6);
-  RFID_ToHex(SelParam, 5, 5);//0x01
-  RFID_ToHex(Ptr, 6, 9);//0x20
-  RFID_ToHex(MaskLen, 10, 10);//0x30
-  RFID_ToHex(Truncate, 11, 11);//0x00
+  Copy_command_library(6);
+  ToHex(SelParam, 5, 5);//0x01
+  ToHex(Ptr, 6, 9);//0x20
+  ToHex(MaskLen, 10, 10);//0x30
+  ToHex(Truncate, 11, 11);//0x00
 
-  RFID_EPC_string_to_command_frame(str_epc, 12, 23);
+  EPC_string_to_command_frame(str_epc, 12, 23);
 
-  RFID_Check_bit_accumulation();
-  RFID_Send_the_modified_command();
+  Check_bit_accumulation();
+  Send_the_modified_command();
+  Delay(100);
+  Readcallback();
 
 
-  RFID_Readcallback();
-
-
-  if (RFID_Scanwarning())
+  if (DelayScanwarning())
   {
-    return 0;
+    return "";
   }
   else
   {
-    if (RFID_Verify_the_return(b, 8))
+    if (Verify_the_return(b, 8))
     {
-      M5.Lcd.drawString("Set the select OK", Xpoint, Ypoint, font_size);
-      return 1;
+      return "Set the select OK";
     }
     else
     {
-      M5.Lcd.drawString("Set the select Unsuccess", Xpoint, Ypoint, font_size);
-      return 0;
+      return "Set the select Unsuccess";
     }
-
-
   }
 }
 
@@ -306,40 +285,41 @@ UBYTE RFID_Set_the_select_parameter_directive(String str_epc, UBYTE SelParam, UD
    Used to get the SELECT parameter
   用于获取Select参数
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_Get_the_select_parameter( UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+SelectInfo UHF_RFID::Get_the_select_parameter()
 {
-  UBYTE a[5] = {0xBB, 0x01, 0x0B, 0x00, 0x13};
+  UBYTE a[4] = {0xBB, 0x01, 0x0B, 0x00};
 
-  RFID_Sendcommand(7);
+  SelectInfo Select;
 
-  RFID_Readcallback();
+  Sendcommand(7);
+  Delay(100);
+  Readcallback();
 
 
-  if (RFID_Scanwarning())
+  if (DelayScanwarning())
   {
-    return 0;
+    Select.Mask = "";
+    Select.SelParam = "";
+    Select.Ptr = "";
+    Select.MaskLen = "";
+    Select.Truncate = "";
+
+    return Select;
   }
   else
   {
-    if (RFID_Verify_the_return(a, 5))
+    if (Verify_the_return(a, 4))
     {
-      RFID_Return_to_convert(1);
+      Return_to_convert(1);
 
-      M5.Lcd.drawString("Mask :", Xpoint, Ypoint, font_size); //Mask
-      M5.Lcd.drawString("SelParam :", Xpoint , Ypoint + 20, font_size); //SelParam
-      M5.Lcd.drawString("Ptr :", Xpoint , Ypoint + 40, font_size); //Ptr
-      M5.Lcd.drawString("MaskLen :", Xpoint , Ypoint + 60, font_size); //Mask 长度 MaskLen
-      M5.Lcd.drawString("Truncate :", Xpoint , Ypoint + 80, font_size); //Truncate
+      Select.Mask = DATA_Str_M5led.substring( 24,  48);
+      Select.SelParam = DATA_Str_M5led.substring( 10,  12);
+      Select.Ptr = DATA_Str_M5led.substring( 12,  20);
+      Select.MaskLen = DATA_Str_M5led.substring( 20,  22);
+      Select.Truncate = DATA_Str_M5led.substring( 22,  24);
 
-      M5.Lcd.drawString(DATA_Str_M5led.substring( 24,  48), Xpoint + 50, Ypoint , font_size); //Mask
-      M5.Lcd.drawString(DATA_Str_M5led.substring( 10,  12), Xpoint + 75, Ypoint + 20, font_size); //SelParam
-      M5.Lcd.drawString(DATA_Str_M5led.substring( 12,  20), Xpoint + 40 , Ypoint + 40, font_size); //Ptr
-      M5.Lcd.drawString(DATA_Str_M5led.substring( 20,  22), Xpoint + 70, Ypoint + 60, font_size); //MaskLen
-      M5.Lcd.drawString(DATA_Str_M5led.substring( 22,  24), Xpoint + 75, Ypoint + 80, font_size); //Truncate
-      return 1;
+      return Select;
     }
-
-    return 0;
 
   }
 }
@@ -360,38 +340,33 @@ UBYTE RFID_Get_the_select_parameter( UWORD Xpoint, UWORD Ypoint, UBYTE font_size
     0x02:	仅对除轮询 Inventory 之外的标签操作之前发送 Select 指令，如在
           Read，Write，Lock，Kill 之前先通过 Select 选取特定的标签。
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_Set_the_Select_mode(UBYTE Select_mode, UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+String UHF_RFID::Set_the_Select_mode(UBYTE Select_mode)
 {
   UBYTE b[8] = {0xBB, 0x01, 0x12, 0x00, 0x01, 0x00, 0x14, 0x7E};
 
-  RFID_Copy_command_library(8);
-  RFID_ToHex(Select_mode, 5, 5);
-  RFID_Check_bit_accumulation();
-  RFID_Send_the_modified_command();
+  Copy_command_library(8);
+  ToHex(Select_mode, 5, 5);
+  Check_bit_accumulation();
+  Send_the_modified_command();
+  Delay(20);
+  Readcallback();
 
 
-  RFID_Readcallback();
-
-
-  if (RFID_Scanwarning())
+  if (DelayScanwarning())
   {
-    return 0;
+    return "";
   }
   else
   {
 
-    if (RFID_Verify_the_return(b, 8))
+    if (Verify_the_return(b, 8))
     {
-      M5.Lcd.drawString("Set the select mode OK", Xpoint, Ypoint, font_size);
-      return 1;
+      return "Set the select mode OK";
     }
     else
     {
-      M5.Lcd.drawString("Set the select mode Unsuccess", Xpoint, Ypoint, font_size);
-      return 0;
+      return "Set the select mode Unsuccess";
     }
-
-
   }
 }
 
@@ -409,58 +384,59 @@ UBYTE RFID_Set_the_Select_mode(UBYTE Select_mode, UWORD Xpoint, UWORD Ypoint, UB
   读标签数据区地址长度 DL:  0x0002
 
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_Read_the_label_data_store(UDOUBLE Access_Password, UBYTE MemBank, UWORD SA, UWORD DL, UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+CardInformationInfo UHF_RFID::Read_the_label_data_store(UDOUBLE Access_Password, UBYTE MemBank, UWORD SA, UWORD DL)
 {
   UBYTE b[6] = {0xBB, 0x01, 0x39, 0x00, 0x13, 0x0E};
   UBYTE e;
 
-  RFID_Copy_command_library(9);
+  CardInformationInfo Cardinformation;
 
-  RFID_ToHex(Access_Password, 5, 8);
-  RFID_ToHex(MemBank, 9, 9);
-  RFID_ToHex(SA, 10, 11);
-  RFID_ToHex(DL, 12, 13);
+  Copy_command_library(9);
 
-  RFID_Check_bit_accumulation();
-  RFID_Send_the_modified_command();
+  ToHex(Access_Password, 5, 8);
+  ToHex(MemBank, 9, 9);
+  ToHex(SA, 10, 11);
+  ToHex(DL, 12, 13);
+
+  Check_bit_accumulation();
+  Send_the_modified_command();
+  Delay(50);
+  Readcallback();
 
 
-  RFID_Readcallback();
-
-
-  if (e = RFID_Scanwarning())
+  if (e = DelayScanwarning())
   {
 
     if (e == 0x16)
     {
-      RFID_Return_to_convert(1);
+      Return_to_convert(1);
 
-      RFID_Access_Password_is_incorrect(Xpoint, Ypoint, font_size);
+      Cardinformation = Access_Password_is_incorrect();
     }
 
     else if (e / 0x10 == 0xA )
     {
-      RFID_Return_to_convert(1);
+      Return_to_convert(1);
 
-      RFID_EPC_Gen2_error_code(Xpoint, Ypoint, font_size);
+      Cardinformation = EPC_Gen2_error_code();
     }
 
-    return 0;
+    return Cardinformation;
   }
   else
   {
-    if (RFID_Verify_the_return(b, 6))
+    if (Verify_the_return(b, 6))
     {
-      RFID_Return_to_convert(1);
+      Return_to_convert(1);
 
-      RFID_UI_PC_EPC( Xpoint,  Ypoint,  font_size);
-      M5.Lcd.drawString("Data :", Xpoint , Ypoint + 60, font_size); //返回数据 Data
+      Cardinformation = UI_PC_EPC();
+      Cardinformation._Data = DATA_Str_M5led.substring( 40,  48);
 
-      M5.Lcd.drawString(DATA_Str_M5led.substring( 40,  48), Xpoint + 45, Ypoint + 60, font_size); //返回数据 Data
-      return 1;
+
+      return Cardinformation;
     }
 
-    return 0;
+
   }
 }
 
@@ -481,57 +457,58 @@ UBYTE RFID_Read_the_label_data_store(UDOUBLE Access_Password, UBYTE MemBank, UWO
   数据长度 DL:  0x0002            (0x02)
   写入数据 DT:  0x12345678
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_The_label_store_writes_data(UDOUBLE Access_Password, UBYTE MemBank, UWORD SA, UWORD DL, UDOUBLE DT, UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+CardInformationInfo UHF_RFID::The_label_store_writes_data(UDOUBLE Access_Password, UBYTE MemBank, UWORD SA, UWORD DL, UDOUBLE DT)
 {
+
+  CardInformationInfo Cardinformation;
+
   UBYTE b[6] = {0xBB, 0x01, 0x49, 0x00, 0x10, 0x0E};
   UBYTE e;
 
-  RFID_Copy_command_library(10);
+  Copy_command_library(10);
 
-  RFID_ToHex(Access_Password, 5, 8);
-  RFID_ToHex(MemBank, 9, 9);
-  RFID_ToHex(SA, 10, 11);
-  RFID_ToHex(DL, 12, 13);
-  RFID_ToHex(DT, 14, 17);
+  ToHex(Access_Password, 5, 8);
+  ToHex(MemBank, 9, 9);
+  ToHex(SA, 10, 11);
+  ToHex(DL, 12, 13);
+  ToHex(DT, 14, 17);
 
-  RFID_Check_bit_accumulation();
-  RFID_Send_the_modified_command();
+  Check_bit_accumulation();
+  Send_the_modified_command();
+  Delay(50);
+  Readcallback();
 
-  RFID_Readcallback();
-
-  if (e = RFID_Scanwarning())
+  if (e = DelayScanwarning())
   {
     if (e == 0x16)
     {
-      RFID_Return_to_convert(1);
+      Return_to_convert(1);
 
-      RFID_Access_Password_is_incorrect(Xpoint, Ypoint, font_size);
+      Cardinformation = Access_Password_is_incorrect();
     }
 
     else if (e / 0x10 == 0xB )
     {
-      RFID_Return_to_convert(1);
+      Return_to_convert(1);
 
-      RFID_EPC_Gen2_error_code(Xpoint, Ypoint, font_size);
+      Cardinformation = EPC_Gen2_error_code();
     }
 
 
-    return 0;
+    return Cardinformation;
   }
   else
   {
-    if (RFID_Verify_the_return(b, 6))
+    if (Verify_the_return(b, 6))
     {
-      RFID_Return_to_convert(1);
+      Return_to_convert(1);
 
-      RFID_Operation_is_successful(Xpoint, Ypoint, font_size);
-      if (DATA_Str_M5led.substring( 40,  42) == "00")
-      {
-        M5.Lcd.drawString("Write to successful", Xpoint , Ypoint + 80, font_size); //指令参数 Parameter:  0x00(执行成功)
-      }
-      return 1;
+      Cardinformation = Operation_is_successful();
+      Cardinformation._Successful = "Write to successful";
+
+      return Cardinformation;
     }
-    return 0;
+
   }
 }
 
@@ -547,11 +524,13 @@ UBYTE RFID_The_label_store_writes_data(UDOUBLE Access_Password, UBYTE MemBank, U
   Action_nub 有 0：kill  1：Access  2：EPC  3：TID  4：User
   Action 有 2 bits，00~11，依次对应为 开放，永久开放，锁定，永久锁定
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_Lock_the_label_data_store(UDOUBLE Access_Password , UBYTE Action_nub, UBYTE Action, UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+CardInformationInfo UHF_RFID::Lock_the_label_data_store(UDOUBLE Access_Password , UBYTE Action_nub, UBYTE Action )
 {
   UDOUBLE Action_Data = 0;
   UBYTE a[6] = {0xBB, 0x01, 0x82, 0x00, 0x10, 0x0E};
   UBYTE e = 0;
+
+  CardInformationInfo Cardinformation;
 
   for (UBYTE i = 0; i < 10; i++)
   {
@@ -569,55 +548,55 @@ UBYTE RFID_Lock_the_label_data_store(UDOUBLE Access_Password , UBYTE Action_nub,
     }
   }
 
-  RFID_Copy_command_library(11);
+  Copy_command_library(11);
 
-  RFID_ToHex(Access_Password, 5, 8);
-  RFID_ToHex(Action_Data, 9, 11);
+  ToHex(Access_Password, 5, 8);
+  ToHex(Action_Data, 9, 11);
 
 
-  RFID_Check_bit_accumulation();
-  RFID_Send_the_modified_command();
+  Check_bit_accumulation();
+  Send_the_modified_command();
+  Delay(50);
+  Readcallback();
 
-  RFID_Readcallback();
-
-  if (e = RFID_Scanwarning())
+  if (e = DelayScanwarning())
   {
     if (e == 0x16)
     {
-      RFID_Return_to_convert(1);
-      RFID_Access_Password_is_incorrect(Xpoint, Ypoint, font_size);
+      Return_to_convert(1);
+      Cardinformation = Access_Password_is_incorrect();
     }
 
     else if (e / 0x10 == 0xC )
     {
-      RFID_Return_to_convert(1);
-      RFID_EPC_Gen2_error_code(Xpoint, Ypoint, font_size);
+      Return_to_convert(1);
+      Cardinformation = EPC_Gen2_error_code();
     }
-    return 0;
+    return Cardinformation;
   }
   else
   {
 
-    if (RFID_Verify_the_return(a, 6))
+    if (Verify_the_return(a, 6))
     {
 
-      RFID_Return_to_convert(1);
+      Return_to_convert(1);
 
-      RFID_Operation_is_successful(Xpoint, Ypoint, font_size);
+      Cardinformation = Operation_is_successful();
       if (DATA_Str_M5led.substring( 40,  42) == "00")
       {
         if (Action == 0b01 || Action == 0b00)
         {
-          M5.Lcd.drawString("unlock successful", Xpoint , Ypoint + 80, font_size); //指令参数 Parameter:  0x00(执行成功)
+          Cardinformation._Successful = "unlock successful";
         }
         else if (Action == 0b10 || Action == 0b11)
         {
-          M5.Lcd.drawString("Lock successful", Xpoint , Ypoint + 80, font_size); //指令参数 Parameter:  0x00(执行成功)
+          Cardinformation._Successful = "Lock successful";
         }
       }
-      return 1;
+      return Cardinformation;
     }
-    return 0;
+
 
   }
 
@@ -631,46 +610,46 @@ UBYTE RFID_Lock_the_label_data_store(UDOUBLE Access_Password , UBYTE Action_nub,
 
   这条指令之前应先设置 Select 参数，以便选择指定的标签进行灭活 Kill 操作。对单标签的灭活操作。
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_Inactivated_label(UDOUBLE Kill_Password, UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+CardInformationInfo UHF_RFID::Inactivated_label(UDOUBLE Kill_Password)
 {
   UBYTE a[6] = {0xBB, 0x01, 0x65, 0x00, 0x10, 0x0E};
   UBYTE e = 0;
 
-  RFID_Copy_command_library(12);
+  CardInformationInfo Cardinformation;
 
-  RFID_ToHex(Kill_Password, 5, 8);
+  Copy_command_library(12);
 
-  RFID_Check_bit_accumulation();
-  RFID_Send_the_modified_command();
+  ToHex(Kill_Password, 5, 8);
 
-  RFID_Readcallback();
+  Check_bit_accumulation();
+  Send_the_modified_command();
 
-  if (e = RFID_Scanwarning())
+  Readcallback();
+
+  if (e = DelayScanwarning())
   {
     if (e / 0x10 == 0xD )
     {
-      RFID_Return_to_convert(1);
-      RFID_EPC_Gen2_error_code(Xpoint, Ypoint, font_size);
+      Return_to_convert(1);
+      Cardinformation = EPC_Gen2_error_code();
     }
-    return 0;
+    return Cardinformation;
   }
   else
   {
 
-    if (RFID_Verify_the_return(a, 6))
+    if (Verify_the_return(a, 6))
     {
+      Return_to_convert(1);
 
-      RFID_Return_to_convert(1);
-
-      RFID_Operation_is_successful(Xpoint, Ypoint, font_size);
+      Cardinformation = Operation_is_successful();
       if (DATA_Str_M5led.substring( 40,  42) == "00")
       {
-        M5.Lcd.drawString("Kill label successful", Xpoint , Ypoint + 80, font_size); //指令参数 Parameter:  0x00(执行成功)
-
+        Cardinformation._Successful = "Kill label successful";
       }
-      return 1;
+      return Cardinformation;
     }
-    return 0;
+
   }
 
 }
@@ -688,15 +667,15 @@ UBYTE RFID_Inactivated_label(UDOUBLE Kill_Password, UWORD Xpoint, UWORD Ypoint, 
 
   功率参数 Pow:  0x00C0(波特率/100 的 16 进制，比如 19200，就是 19200/100=192=0xC0)
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_Set_the_communication_baud_rate(UWORD Pow, UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+UBYTE UHF_RFID::Set_the_communication_baud_rate(UWORD Pow)
 {
 
-  RFID_Copy_command_library(13);
+  Copy_command_library(13);
 
-  RFID_ToHex(Pow, 5, 6);
+  ToHex(Pow, 5, 6);
 
-  RFID_Check_bit_accumulation();
-  RFID_Send_the_modified_command();
+  Check_bit_accumulation();
+  Send_the_modified_command();
 
 }
 
@@ -706,27 +685,38 @@ UBYTE RFID_Set_the_communication_baud_rate(UWORD Pow, UWORD Xpoint, UWORD Ypoint
   用于获取Query参数
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-UBYTE RFID_Get_the_Query_parameter( UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+QueryInfo UHF_RFID::Get_the_Query_parameter()
 {
-  String Query = "";
+  String QueryStr = "";
   UBYTE a[5] = {0xBB, 0x01, 0x0D, 0x00, 0x02};
   UBYTE c = 0;
   UBYTE d = 0;
   UBYTE e = 0;
   UBYTE i = 0;
-
   UBYTE x = 0;
-  RFID_Sendcommand(14);
 
-  RFID_Readcallback();
+  QueryInfo Query;
 
-  if (RFID_Scanwarning())
+  Sendcommand(14);
+
+  Readcallback();
+
+  if (DelayScanwarning())
   {
-    return 0;
+    Query.QueryParameter = "";
+    Query.DR = "";
+    Query.M = "";
+    Query.TRext = "";
+    Query.Sel = "";
+    Query.Session = "";
+    Query.Target = "";
+    Query.Q = "";
+
+    return Query;
   }
   else
   {
-    if (RFID_Verify_the_return(a, 5))
+    if (Verify_the_return(a, 5))
     {
       for (int b = 5; b <= 6; b++)
       {
@@ -746,33 +736,24 @@ UBYTE RFID_Get_the_Query_parameter( UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
         }
         for (i = 1; i < 8 - x; i++)
         {
-          Query += "0";
+          QueryStr += "0";
         }
-        Query += String(DATA_I[b], BIN);
+        QueryStr += String(DATA_I[b], BIN);
       }
-      RFID_Return_to_convert(1);
+      Return_to_convert(1);
 
-      M5.Lcd.drawString("Query Parameter :", Xpoint, Ypoint, font_size); //Parameter is 2 bytes, there are the following specific parameters in bitwise stitching.The Query parameter corresponding to the above response frame 参数为 2 字节，有下面的具体参数按位拼接而成。上述响应帧对应的 Query 参数
-      M5.Lcd.drawString("DR :", Xpoint, Ypoint + 20, font_size); //DR=8(1’b0), DR=64/3(1’b1). Only DR=8 modes are supported 只支持 DR=8 的模式
-      M5.Lcd.drawString("M :", Xpoint, Ypoint + 40, font_size); //M=1(2’b00), M=2(2’b01), M=4(2’b10), M=8(2’b11). Only M=1 modes are supported 只支持 M=1 的模式
-      M5.Lcd.drawString("TRext :", Xpoint, Ypoint + 60, font_size); //No pilot tone(1’b0), Use pilot tone(1’b1). Only Use Pilot Tone (1 'B1) mode is supported 只支持 Use pilot tone(1’b1)模式
-      M5.Lcd.drawString("Sel :", Xpoint, Ypoint + 80, font_size); //ALL(2’b00/2’b01), ~SL(2’b10), SL(2’b11)
-      M5.Lcd.drawString("Session :", Xpoint, Ypoint + 100, font_size); //S0(2’b00), S1(2’b01), S2(2’b10), S3(2’b11)
-      M5.Lcd.drawString("Target :", Xpoint, Ypoint + 120, font_size); //A(1’b0), B(1’b1)
-      M5.Lcd.drawString("Q :", Xpoint, Ypoint + 140, font_size); //4’b0000-4’b1111
+      Query.QueryParameter = DATA_Str_M5led.substring(10, 14);
+      Query.DR = QueryStr.substring(0, 1);
+      Query.M = QueryStr.substring(1, 3);
+      Query.TRext = QueryStr.substring(3, 4);
+      Query.Sel = QueryStr.substring(4, 6);
+      Query.Session = QueryStr.substring(6, 8);
+      Query.Target = QueryStr.substring(8, 9);
+      Query.Q = QueryStr.substring(9, 13);
 
-      M5.Lcd.drawString(DATA_Str_M5led.substring(10, 14), Xpoint + 120, Ypoint, font_size);
-      M5.Lcd.drawString(Query.substring(0, 1), Xpoint + 30, Ypoint + 20, font_size);
-      M5.Lcd.drawString(Query.substring(1, 3), Xpoint + 25, Ypoint + 40, font_size);
-      M5.Lcd.drawString(Query.substring(3, 4), Xpoint + 50, Ypoint + 60, font_size);
-      M5.Lcd.drawString(Query.substring(4, 6), Xpoint + 35, Ypoint + 80, font_size);
-      M5.Lcd.drawString(Query.substring(6, 8), Xpoint + 65, Ypoint + 100, font_size);
-      M5.Lcd.drawString(Query.substring(8, 9), Xpoint + 55, Ypoint + 120, font_size);
-      M5.Lcd.drawString(Query.substring(9, 13), Xpoint + 25, Ypoint + 140, font_size);
-
-      return 1;
+      return Query;
     }
-    return 0;
+
   }
 }
 
@@ -797,13 +778,13 @@ UBYTE RFID_Get_the_Query_parameter( UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
   Q(4 bit):	4’b0000-4’b1111
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-UBYTE RFID_set_the_Query_parameter(UBYTE Sel, UBYTE Session, UBYTE Target, UWORD Q, UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+String UHF_RFID::set_the_Query_parameter(UBYTE Sel, UBYTE Session, UBYTE Target, UWORD Q)
 {
   UDOUBLE para = 0b1;
-  UBYTE a[8] = {0xBB, 0x01, 0x0E, 0x00, 0x01, 0x00, 0x10, 0x7E};
+  UBYTE a[8] = {0xBB, 0x01, 0x0E, 0x00, 0x01, 0x00, 0x10,};
 
 
-  RFID_Copy_command_library(15);
+  Copy_command_library(15);
 
   para =  para * 0b100 + Sel;
   para =  para * 0b100 + Session;
@@ -811,28 +792,27 @@ UBYTE RFID_set_the_Query_parameter(UBYTE Sel, UBYTE Session, UBYTE Target, UWORD
   para =  para * 0b10000 + Q;
   para =  para * 0b1000;
 
-  RFID_ToHex(para, 5, 6);
+  ToHex(para, 5, 6);
 
-  RFID_Check_bit_accumulation();
-  RFID_Send_the_modified_command();
+  Check_bit_accumulation();
+  Send_the_modified_command();
+  Delay(50);
 
-  RFID_Readcallback();
+  Readcallback();
 
-  if (RFID_Scanwarning())
+  if (DelayScanwarning())
   {
-    return 0;
+    return "";
   }
   else
   {
-    if (RFID_Verify_the_return(a, 8))
+    if (Verify_the_return(a, 7))
     {
-      M5.Lcd.drawString("Set the Query OK ", Xpoint, Ypoint, font_size);
-      return 1;
+      return "Set the Query OK ";
     }
     else
     {
-      M5.Lcd.drawString("Set the Query Unsuccess ", Xpoint, Ypoint, font_size);
-      return 0;
+      return "Set the Query Unsuccess ";
     }
 
 
@@ -855,32 +835,31 @@ UBYTE RFID_set_the_Query_parameter(UBYTE Sel, UBYTE Session, UBYTE Target, UWORD
   欧洲	0x03
   韩国	0x06
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_Set_up_work_area(UBYTE Region, UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+String UHF_RFID::Set_up_work_area(UBYTE Region)
 {
   UBYTE a[8] = {0xBB, 0x01, 0x07, 0x00, 0x01, 0x00, 0x09, 0x7E};
 
-  RFID_Copy_command_library(16);
+  Copy_command_library(16);
 
-  RFID_ToHex(Region, 6, 6);
+  ToHex(Region, 6, 6);
 
-  RFID_Check_bit_accumulation();
-  RFID_Send_the_modified_command();
+  Check_bit_accumulation();
+  Send_the_modified_command();
+  Delay(20);
+  Readcallback();
 
-  RFID_Readcallback();
-
-  if (RFID_Scanwarning())
+  if (DelayScanwarning())
   {
-    return 0;
+    return "";
   }
   else
   {
 
-    if (RFID_Verify_the_return(a, 8))
+    if (Verify_the_return(a, 8))
     {
-      M5.Lcd.drawString("Set up work area OK ", Xpoint, Ypoint, font_size);
-      return 1;
+      return "Set up work area OK ";
     }
-    return 0;
+    return "";
   }
 }
 
@@ -899,30 +878,41 @@ UBYTE RFID_Set_up_work_area(UBYTE Region, UWORD Xpoint, UWORD Ypoint, UBYTE font
   欧洲  0x03
   韩国  0x06
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_Read_working_area(UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+ReadInfo UHF_RFID::Read_working_area()
 {
   UBYTE a[5] = {0xBB, 0x01, 0x08, 0x00, 0x01};
 
-  RFID_Sendcommand(17);
+  ReadInfo Read;
 
-  RFID_Readcallback();
+  Sendcommand(17);
+  Delay(20);
+  Readcallback();
 
-  if (RFID_Scanwarning())
+  if (DelayScanwarning())
   {
-    return 0;
+    Read.Region = "";
+    Read.Channel_Index = "";
+    Read.Pow = "";
+    Read.Mixer_G =  "";
+    Read.IF_G =  "";
+    Read.Thrd =  "";
+    return Read;
   }
   else
   {
-    if (RFID_Verify_the_return(a, 5))
+    if (Verify_the_return(a, 5))
     {
-      RFID_Return_to_convert(1);
+      Return_to_convert(1);
+      Read.Region = DATA_Str_M5led.substring(10, 12);
+      Read.Channel_Index = "";
+      Read.Pow = "";
+      Read.Mixer_G =  "";
+      Read.IF_G =  "";
+      Read.Thrd =  "";
 
-      M5.Lcd.drawString("Region :", Xpoint, Ypoint, font_size);
-
-      M5.Lcd.drawString(DATA_Str_M5led.substring(10, 12), Xpoint + 55, Ypoint, font_size);
-      return 1;
+      return Read;
     }
-    return 0;
+
   }
 }
 
@@ -957,32 +947,32 @@ UBYTE RFID_Read_working_area(UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
   CH_Index = (Freq_CH-917.1M)/0.2M
   如果是中国 900MHz 频段，设置读写器工作信道 920.375MHz，CH Index = 0x01
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_Set_up_working_channel(UBYTE CH_Index, UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+String UHF_RFID::Set_up_working_channel(UBYTE CH_Index)
 {
   UBYTE a[8] = {0xBB, 0x01, 0xAB, 0x00, 0x01, 0x00, 0xAD, 0x7E};
 
-  RFID_Copy_command_library(18);
+  Copy_command_library(18);
 
-  RFID_ToHex(CH_Index, 6, 6);
+  ToHex(CH_Index, 6, 6);
 
-  RFID_Check_bit_accumulation();
-  RFID_Send_the_modified_command();
+  Check_bit_accumulation();
+  Send_the_modified_command();
+  Delay(20);
+  Readcallback();
 
-  RFID_Readcallback();
-
-  if (RFID_Scanwarning())
+  if (DelayScanwarning())
   {
-    return 0;
+    return "";
   }
   else
   {
 
-    if (RFID_Verify_the_return(a, 8))
+    if (Verify_the_return(a, 8))
     {
-      M5.Lcd.drawString("Set up working channel OK ", Xpoint, Ypoint, font_size);
-      return 1;
+
+      return "Set up working channel OK ";
     }
-    return 0;
+    return "";
   }
 }
 
@@ -1017,30 +1007,40 @@ UBYTE RFID_Set_up_working_channel(UBYTE CH_Index, UWORD Xpoint, UWORD Ypoint, UB
   Freq_CH = CH_Index * 0.2M + 917.1M
 
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_Read_working_channel(UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+ReadInfo UHF_RFID::Read_working_channel()
 {
   UBYTE a[5] = {0xBB, 0x01, 0xAA, 0x00, 0x01};
 
-  RFID_Sendcommand(19);
+  ReadInfo Read;
 
-  RFID_Readcallback();
+  Sendcommand(19);
+  Delay(20);
+  Readcallback();
 
-  if (RFID_Scanwarning())
+  if (DelayScanwarning())
   {
-    return 0;
+    Read.Region = "";
+    Read.Channel_Index = "";
+    Read.Pow = "";
+    Read.Mixer_G =  "";
+    Read.IF_G =  "";
+    Read.Thrd =  "";
+    return Read;
   }
   else
   {
-    if (RFID_Verify_the_return(a, 5))
+    if (Verify_the_return(a, 5))
     {
-      RFID_Return_to_convert(1);
-
-      M5.Lcd.drawString("Channel_Index :", Xpoint, Ypoint, font_size);
-
-      M5.Lcd.drawString(DATA_Str_M5led.substring(10, 12), Xpoint + 105, Ypoint, font_size);
-      return 1;
+      Return_to_convert(1);
+      Read.Region = "";
+      Read.Channel_Index = DATA_Str_M5led.substring(10, 12);
+      Read.Pow = "";
+      Read.Mixer_G =  "";
+      Read.IF_G =  "";
+      Read.Thrd =  "";
+      return Read;
     }
-    return 0;
+
   }
 }
 
@@ -1057,39 +1057,39 @@ UBYTE RFID_Read_working_channel(UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
 
   Parameter:	0xFF(0xFF 为设置自动跳频，0x00 为取消自动跳频)
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_Set_up_automatic_frequency_modulation(UWORD Parameter, UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+String UHF_RFID::Set_up_automatic_frequency_modulation(UWORD Parameter)
 {
   UBYTE a[8] = {0xBB, 0x01, 0xAD, 0x00, 0x01, 0x00, 0xAF, 0x7E};
 
-  RFID_Copy_command_library(20);
+  Copy_command_library(20);
 
-  RFID_ToHex(Parameter, 6, 6);
+  ToHex(Parameter, 6, 6);
 
-  RFID_Check_bit_accumulation();
-  RFID_Send_the_modified_command();
+  Check_bit_accumulation();
+  Send_the_modified_command();
+  Delay(20);
+  Readcallback();
 
-  RFID_Readcallback();
-
-  if (RFID_Scanwarning())
+  if (DelayScanwarning())
   {
-    return 0;
+    return "";
   }
   else
   {
 
-    if (RFID_Verify_the_return(a, 8))
+    if (Verify_the_return(a, 8))
     {
       if (Parameter == 0xff)
       {
-        M5.Lcd.drawString("Set up aut FM Up ", Xpoint, Ypoint, font_size);
+        return "Set up aut FM Up ";
       }
       else if (Parameter == 0x00)
       {
-        M5.Lcd.drawString("Set up aut FM Down", Xpoint, Ypoint, font_size);
+        return "Set up aut FM Down";
       }
-      return 1;
+
     }
-    return 0;
+    return "";
   }
 }
 
@@ -1108,37 +1108,37 @@ UBYTE RFID_Set_up_automatic_frequency_modulation(UWORD Parameter, UWORD Xpoint, 
   CH Cnt:	0x05 (如果为 0，则清除跳频信道列表，读写器从全部可用信道中随机跳频)
   CH list : 信道列表(用 CH Index 表示):	0x01 0x02 0x03 0x04 0x05
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_Insert_working_channel(UBYTE CH_Cnt, UBYTE CH_list_1, UBYTE CH_list_2, UBYTE CH_list_3, UBYTE CH_list_4, UBYTE CH_list_5, UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+String UHF_RFID::Insert_working_channel(UBYTE CH_Cnt, UBYTE CH_list_1, UBYTE CH_list_2, UBYTE CH_list_3, UBYTE CH_list_4, UBYTE CH_list_5)
 {
   UBYTE a[8] = {0xBB, 0x01, 0xA9, 0x00, 0x01, 0x00, 0xAB, 0x7E};
 
-  RFID_Copy_command_library(21);
+  Copy_command_library(21);
 
-  RFID_ToHex(CH_Cnt, 5, 5);
-  RFID_ToHex(CH_list_1, 6, 6);
-  RFID_ToHex(CH_list_2, 7, 7);
-  RFID_ToHex(CH_list_3, 8, 8);
-  RFID_ToHex(CH_list_4, 9, 9);
-  RFID_ToHex(CH_list_5, 10, 10);
+  ToHex(CH_Cnt, 5, 5);
+  ToHex(CH_list_1, 6, 6);
+  ToHex(CH_list_2, 7, 7);
+  ToHex(CH_list_3, 8, 8);
+  ToHex(CH_list_4, 9, 9);
+  ToHex(CH_list_5, 10, 10);
 
-  RFID_Check_bit_accumulation();
-  RFID_Send_the_modified_command();
+  Check_bit_accumulation();
+  Send_the_modified_command();
+  Delay(20);
+  Readcallback();
 
-  RFID_Readcallback();
-
-  if (RFID_Scanwarning())
+  if (DelayScanwarning())
   {
-    return 0;
+    return "";
   }
   else
   {
 
-    if (RFID_Verify_the_return(a, 8))
+    if (Verify_the_return(a, 8))
     {
-      M5.Lcd.drawString("Insert working channel OK", Xpoint, Ypoint, font_size);
-      return 1;
+
+      return "Insert working channel OK";
     }
-    return 0;
+    return "";
 
   }
 }
@@ -1149,30 +1149,41 @@ UBYTE RFID_Insert_working_channel(UBYTE CH_Cnt, UBYTE CH_list_1, UBYTE CH_list_2
 
   用于获取当前读写器发射功率
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_Read_transmitting_power(UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+ReadInfo UHF_RFID::Read_transmitting_power()
 {
   UBYTE a[5] = {0xBB, 0x01, 0xB7, 0x00, 0x02};
 
-  RFID_Sendcommand(22);
+  ReadInfo Read;
 
-  RFID_Readcallback();
+  Sendcommand(22);
+  Delay(20);
+  Readcallback();
 
-  if (RFID_Scanwarning())
+  if (DelayScanwarning())
   {
-    return 0;
+    Read.Region =  "";
+    Read.Channel_Index = "";
+    Read.Pow = "";
+    Read.Mixer_G =  "";
+    Read.IF_G =  "";
+    Read.Thrd =  "";
+    return Read;
   }
   else
   {
-    if (RFID_Verify_the_return(a, 5))
+    if (Verify_the_return(a, 5))
     {
-      RFID_Return_to_convert(1);
+      Return_to_convert(1);
+      Read.Region =  "";
+      Read.Channel_Index = "";
+      Read.Pow = DATA_Str_M5led.substring(10, 14);
+      Read.Mixer_G =  "";
+      Read.IF_G =  "";
+      Read.Thrd =  "";
 
-      M5.Lcd.drawString("Pow :", Xpoint, Ypoint, font_size);
-
-      M5.Lcd.drawString(DATA_Str_M5led.substring(10, 14), Xpoint + 40, Ypoint, font_size);
-      return 1;
+      return Read;
     }
-    return 0;
+
   }
 }
 
@@ -1184,33 +1195,32 @@ UBYTE RFID_Read_transmitting_power(UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
 
   功率参数 Pow:  0x07D0(当前功率为十进制 2000，即 20dBm)
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_Set_transmission_Power(UWORD Pow, UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+String UHF_RFID::Set_transmission_Power(UWORD Pow)
 {
   UBYTE a[8] = {0xBB, 0x01, 0xB6, 0x00, 0x01, 0x00, 0xB8, 0x7E};
 
-  RFID_Copy_command_library(23);
+  Copy_command_library(23);
 
-  RFID_ToHex(Pow, 5, 6);
+  ToHex(Pow, 5, 6);
 
-  RFID_Check_bit_accumulation();
-  RFID_Send_the_modified_command();
+  Check_bit_accumulation();
+  Send_the_modified_command();
+  Delay(20);
+  Readcallback();
 
-  RFID_Readcallback();
-
-  if (RFID_Scanwarning())
+  if (DelayScanwarning())
   {
-    return 0;
+    return "";
   }
   else
   {
-    if (RFID_Verify_the_return(a, 8))
+    if (Verify_the_return(a, 8))
     {
-      RFID_Return_to_convert(1);
+      Return_to_convert(1);
 
-      M5.Lcd.drawString("Set transmission Power OK", Xpoint, Ypoint, font_size);
-      return 1;
+      return "Set transmission Power OK";
     }
-    return 0;
+    return "";
   }
 }
 
@@ -1222,42 +1232,40 @@ UBYTE RFID_Set_transmission_Power(UWORD Pow, UWORD Xpoint, UWORD Ypoint, UBYTE f
 
   指令参数 Parameter:	0xFF(0xFF 为打开连续波，0x00 为关闭连续波)
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_Sets_to_transmit_a_continuous_carrier(UWORD Parameter, UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+String UHF_RFID::Sets_to_transmit_a_continuous_carrier(UWORD Parameter)
 {
   UBYTE a[8] = {0xBB, 0x01, 0xB0, 0x00, 0x01, 0x00, 0xB2, 0x7E};
 
-  RFID_Copy_command_library(24);
+  Copy_command_library(24);
 
-  RFID_ToHex(Parameter, 5, 5);
+  ToHex(Parameter, 5, 5);
 
-  RFID_Check_bit_accumulation();
-  RFID_Send_the_modified_command();
+  Check_bit_accumulation();
+  Send_the_modified_command();
+  Delay(20);
+  Readcallback();
 
-  RFID_Readcallback();
-
-  if (RFID_Scanwarning())
+  if (DelayScanwarning())
   {
-    return 0;
+    return "";
   }
   else
   {
-    if (RFID_Verify_the_return(a, 8))
+    if (Verify_the_return(a, 8))
     {
-      RFID_Return_to_convert(1);
+      Return_to_convert(1);
 
       if (Parameter == 0xff)
       {
-        M5.Lcd.drawString("Sets up TCC OK", Xpoint, Ypoint, font_size);
-        return 1;
+        return "Sets up TCC OK";
       }
       else if (Parameter == 0x00)
       {
-        M5.Lcd.drawString("Turn off TCC OK", Xpoint, Ypoint, font_size);
-        return 1;
+        return "Turn off TCC OK";
       }
 
     }
-    return 0;
+    return "";
   }
 }
 
@@ -1314,35 +1322,42 @@ UBYTE RFID_Sets_to_transmit_a_continuous_carrier(UWORD Parameter, UWORD Xpoint, 
     0x06	16                       0x06	36
                                    0x07	40
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_Read_receive_demodulator_parameters(UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+ReadInfo UHF_RFID::Read_receive_demodulator_parameters()
 {
   UBYTE a[5] = {0xBB, 0x01, 0xF1, 0x00, 0x04};
 
-  RFID_Sendcommand(25);
+  ReadInfo Read;
 
-  RFID_Readcallback();
+  Sendcommand(25);
+  Delay(20);
+  Readcallback();
 
-  if (RFID_Scanwarning())
+  if (DelayScanwarning())
   {
-    return 0;
+    Read.Region =  "";
+    Read.Channel_Index = "";
+    Read.Pow = "";
+    Read.Mixer_G = "";
+    Read.IF_G =  "";
+    Read.Thrd = "";
+    return Read;
   }
   else
   {
-    if (RFID_Verify_the_return(a, 5))
+    if (Verify_the_return(a, 5))
     {
-      RFID_Return_to_convert(1);
+      Return_to_convert(1);
 
-      M5.Lcd.drawString("Mixer_G :", Xpoint, Ypoint, font_size);
-      M5.Lcd.drawString("IF_G :", Xpoint, Ypoint + 20, font_size);
-      M5.Lcd.drawString("Thrd :", Xpoint, Ypoint + 40, font_size);
+      Read.Region =  "";
+      Read.Channel_Index = "";
+      Read.Pow = "";
+      Read.Mixer_G =  DATA_Str_M5led.substring(10, 12);
+      Read.IF_G =  DATA_Str_M5led.substring(12, 14);
+      Read.Thrd =  DATA_Str_M5led.substring(14, 18);
 
-      M5.Lcd.drawString(DATA_Str_M5led.substring(10, 12), Xpoint + 60, Ypoint, font_size);
-      M5.Lcd.drawString(DATA_Str_M5led.substring(12, 14), Xpoint + 45, Ypoint + 20, font_size);
-      M5.Lcd.drawString(DATA_Str_M5led.substring(14, 18), Xpoint + 45, Ypoint + 40, font_size);
-
-      return 1;
+      return Read;
     }
-    return 0;
+
   }
 }
 
@@ -1385,35 +1400,33 @@ UBYTE RFID_Read_receive_demodulator_parameters(UWORD Xpoint, UWORD Ypoint, UBYTE
     0x06	16                       0x06	36
                                    0x07	40
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_Sets_the_receiv_demodulator_parameters(UBYTE Mixer_G, UBYTE IF_G, UWORD Thrd, UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+String UHF_RFID::Sets_the_receiv_demodulator_parameters(UBYTE Mixer_G, UBYTE IF_G, UWORD Thrd)
 {
   UBYTE a[8] = {0xBB, 0x01, 0xF0, 0x00, 0x01, 0x00, 0xF2, 0x7E};
 
-  RFID_Copy_command_library(26);
+  Copy_command_library(26);
 
-  RFID_ToHex(Mixer_G, 5, 5);
-  RFID_ToHex(IF_G, 6, 6);
-  RFID_ToHex(Thrd, 7, 8);
+  ToHex(Mixer_G, 5, 5);
+  ToHex(IF_G, 6, 6);
+  ToHex(Thrd, 7, 8);
 
-  RFID_Check_bit_accumulation();
-  RFID_Send_the_modified_command();
+  Check_bit_accumulation();
+  Send_the_modified_command();
+  Delay(20);
+  Readcallback();
 
-  RFID_Readcallback();
-
-  if (RFID_Scanwarning())
+  if (DelayScanwarning())
   {
-    return 0;
+    return "";
   }
   else
   {
-    if (RFID_Verify_the_return(a, 8))
+    if (Verify_the_return(a, 8))
     {
-      RFID_Return_to_convert(1);
-
-      M5.Lcd.drawString("Sets up RDP OK", Xpoint, Ypoint, font_size);
-      return 1;
+      Return_to_convert(1);
+      return "Sets up RDP OK";
     }
-    return 0;
+    return "";
   }
 }
 
@@ -1424,10 +1437,10 @@ UBYTE RFID_Sets_the_receiv_demodulator_parameters(UBYTE Mixer_G, UBYTE IF_G, UWO
 
   用于测试射频输入端阻塞信号
 
-  信道阻塞信号 JMR:  0xF2F1F0EFECEAE8EAECEEF0F1F5F5F5F6F5F5F5F5(每个信道的阻塞信号
+  信道阻塞信号 JMR:  0xF2 F1 F0 EF EC EA E8 EA EC EE F0 F1 F5 F5 F5 F6 F5 F5 F5 F5(每个信道的阻塞信号
   JMR 都用一个有符号的 Byte 表示，其中 0xF2 为-14dBm)
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_Test_the_RF_input_blocking_signal( UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+TestInfo UHF_RFID::Test_the_RF_input_blocking_signal()
 {
   UBYTE a[5] = {0xBB, 0x01, 0xF2, 0x00, 0x16};
   UBYTE b = 0;
@@ -1435,47 +1448,40 @@ UBYTE RFID_Test_the_RF_input_blocking_signal( UWORD Xpoint, UWORD Ypoint, UBYTE 
   UBYTE d = 0;
   UBYTE e = 0;
 
-  RFID_Sendcommand(27);
+  TestInfo Test;
 
-  RFID_Readcallback();
+  Sendcommand(27);
 
-  if (RFID_Scanwarning())
+  Readcallback();
+
+  if (DelayScanwarning())
   {
-    return 0;
+    Test.CH_L = "";
+    Test.CH_H = "";
+    for (size_t i = 0; i < 20; i++)
+    {
+      Test.Data[i] = "";
+    }
+
+    return Test;
   }
   else
   {
 
-    if (RFID_Verify_the_return(a, 5))
+    if (Verify_the_return(a, 5))
     {
-      RFID_Return_to_convert(1);
+      Return_to_convert(1);
 
-      M5.Lcd.drawString("CH_L :", Xpoint, Ypoint, font_size);
-      M5.Lcd.drawString("CH_H :", Xpoint, Ypoint + 20, font_size);
-      M5.Lcd.drawString("JMR :", Xpoint, Ypoint + 40, font_size);
-
-      M5.Lcd.drawString(DATA_Str_M5led.substring(10, 12), Xpoint + 45, Ypoint, font_size);
-      M5.Lcd.drawString(DATA_Str_M5led.substring(12, 14), Xpoint + 45, Ypoint + 20, font_size);
-
-      d = ((DATA_I[6] - DATA_I[5]) % 5) ? 1 + (DATA_I[6] - DATA_I[5]) / 5 : (DATA_I[6] - DATA_I[5]) / 5;
-      for (b = 0; b < d; b++)
+      Test.CH_L = DATA_Str_M5led.substring(10, 12);
+      Test.CH_H = DATA_Str_M5led.substring(12, 14);
+      for (size_t i = 0; i < 20; i++)
       {
-        if (b >= 2) {
-          e = 8;
-        }
-        for ( c = 0; c < 5; c++)
-        {
-          if (c + b * 5 > (DATA_I[6] - DATA_I[5])) {
-            break;
-          }
-          M5.Lcd.drawString("CH", Xpoint + c * 65, Ypoint + 60 + b * 20, font_size);
-          M5.Lcd.drawString(String(c + b * 5) + ":", Xpoint  + 17 + c * 65, Ypoint + 60 + b * 20, font_size);
-          M5.Lcd.drawString(DATA_Str_M5led.substring(14 + (c + b * 5) * 2, 16 + (c + b * 5) * 2), Xpoint  + 30 + c * 65 + e, Ypoint + 60 + b * 20, font_size);
-        }
+        Test.Data[i] = DATA_Str_M5led.substring(14 + (i) * 2, 16 + (i) * 2);
       }
-      return 1;
+
+      return Test;
     }
-    return 0;
+
   }
 }
 
@@ -1487,10 +1493,10 @@ UBYTE RFID_Test_the_RF_input_blocking_signal( UWORD Xpoint, UWORD Ypoint, UBYTE 
 
   用于测试射频输入端 RSSI 信号大小
 
-  信道信号强度 RSSI:  0xBABABABABABABABABABABABABABABABABABABABA(每个信道的
+  信道信号强度 RSSI:  0xBA BA BA BA BA BA BA BA BA BA BA BA BA BA BA BA BA BA BA BA(每个信道的
   RSSI 用一个有符号的 Byte 表示，其中 0xBA 为-70dBm，为读写器能检测的 RSSI 的最小值)
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_Test_the_RSSI_input_signal( UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+TestInfo UHF_RFID::Test_the_RSSI_input_signal()
 {
   UBYTE a[5] = {0xBB, 0x01, 0xF3, 0x00, 0x16};
   UBYTE b = 0;
@@ -1498,47 +1504,39 @@ UBYTE RFID_Test_the_RSSI_input_signal( UWORD Xpoint, UWORD Ypoint, UBYTE font_si
   UBYTE d = 0;
   UBYTE e = 0;
 
-  RFID_Sendcommand(28);
+  TestInfo Test;
 
-  RFID_Readcallback();
+  Sendcommand(28);
 
-  if (RFID_Scanwarning())
+  Readcallback();
+
+  if (DelayScanwarning())
   {
-    return 0;
+    Test.CH_L = "";
+    Test.CH_H = "";
+    for (size_t i = 0; i < 20; i++)
+    {
+      Test.Data[i] = "";
+    }
+
+    return Test;
   }
   else
   {
 
-    if (RFID_Verify_the_return(a, 5))
+    if (Verify_the_return(a, 5))
     {
-      RFID_Return_to_convert(1);
+      Return_to_convert(1);
 
-      M5.Lcd.drawString("CH_L :", Xpoint, Ypoint, font_size);
-      M5.Lcd.drawString("CH_H :", Xpoint, Ypoint + 20, font_size);
-      M5.Lcd.drawString("RSSI :", Xpoint, Ypoint + 40, font_size);
-
-      M5.Lcd.drawString(DATA_Str_M5led.substring(10, 12), Xpoint + 45, Ypoint, font_size);
-      M5.Lcd.drawString(DATA_Str_M5led.substring(12, 14), Xpoint + 45, Ypoint + 20, font_size);
-
-      d = ((DATA_I[6] - DATA_I[5]) % 5) ? 1 + (DATA_I[6] - DATA_I[5]) / 5 : (DATA_I[6] - DATA_I[5]) / 5;
-      for (b = 0; b < d; b++)
+      Test.CH_L = DATA_Str_M5led.substring(10, 12);
+      Test.CH_H = DATA_Str_M5led.substring(12, 14);
+      for (size_t i = 0; i < 20; i++)
       {
-        if (b >= 2) {
-          e = 8;
-        }
-        for ( c = 0; c < 5; c++)
-        {
-          if (c + b * 5 > (DATA_I[6] - DATA_I[5])) {
-            break;
-          }
-          M5.Lcd.drawString("CH", Xpoint + c * 65, Ypoint + 60 + b * 20, font_size);
-          M5.Lcd.drawString(String(c + b * 5) + ":", Xpoint  + 17 + c * 65, Ypoint + 60 + b * 20, font_size);
-          M5.Lcd.drawString(DATA_Str_M5led.substring(14 + (c + b * 5) * 2, 16 + (c + b * 5) * 2), Xpoint  + 30 + c * 65 + e, Ypoint + 60 + b * 20, font_size);
-        }
+        Test.Data[i] = DATA_Str_M5led.substring(14 + (i) * 2, 16 + (i) * 2);
       }
-      return 1;
+
+      return Test;
     }
-    return 0;
   }
 }
 
@@ -1558,28 +1556,26 @@ UBYTE RFID_Test_the_RSSI_input_signal( UWORD Xpoint, UWORD Ypoint, UBYTE font_si
   置一些参数到模块中（这些参数包括休眠前配置的功率，频率，跳频模式，休眠时间，接收解调器参数，不包
   括 Select 模式，Select 参数等），因此有些参数可能需要重新设置。
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_Set_module_hibernation( UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+String UHF_RFID::Set_module_hibernation()
 {
   UBYTE a[8] = {0xBB, 0x01, 0x17, 0x00, 0x01, 0x00, 0x19, 0x7E};
 
-  RFID_Sendcommand(30);
+  Sendcommand(30);
+  Delay(20);
+  Readcallback();
 
-  RFID_Readcallback();
-
-  if (RFID_Scanwarning())
+  if (DelayScanwarning())
   {
-    return 0;
+    return "";
   }
   else
   {
 
-    if (RFID_Verify_the_return(a, 8))
+    if (Verify_the_return(a, 8))
     {
-
-      M5.Lcd.drawString("The module of dormancy OK", Xpoint, Ypoint, font_size);
-      return 1;
+      return "The module of dormancy OK";
     }
-    return 0;
+    return "";
   }
 }
 
@@ -1603,36 +1599,32 @@ UBYTE RFID_Set_module_hibernation( UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
 
   指令参数 Parameter:	0x02(2 分钟无操作之后休眠，范围 1~30 分钟，0x00 代表不自动休眠)
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_Set_Sleep_Time(UWORD Parameter, UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+String UHF_RFID::Set_Sleep_Time(UWORD Parameter)
 {
   UBYTE a[5] = {0xBB, 0x01, 0x1D, 0x00, 0x01};
 
-  RFID_Copy_command_library(31);
+  Copy_command_library(31);
 
-  RFID_ToHex(Parameter, 6, 6);
+  ToHex(Parameter, 6, 6);
 
-  RFID_Check_bit_accumulation();
-  RFID_Send_the_modified_command();
+  Check_bit_accumulation();
+  Send_the_modified_command();
+  Delay(20);
+  Readcallback();
 
-  RFID_Readcallback();
-
-  if (RFID_Scanwarning())
+  if (DelayScanwarning())
   {
-    return 0;
+    return "";
   }
   else
   {
 
-    if (RFID_Verify_the_return(a, 5))
+    if (Verify_the_return(a, 5))
     {
-      RFID_Return_to_convert(1);
-      M5.Lcd.drawString("sleep time :", Xpoint, Ypoint, font_size);
-
-      M5.Lcd.drawString(DATA_Str_M5led.substring(10, 12), Xpoint + 75, Ypoint, font_size);
-      M5.Lcd.drawString("Set the sleep time OK", Xpoint, Ypoint + 20, font_size);
-      return 1;
+      Return_to_convert(1);
+      return "sleep time :" + DATA_Str_M5led.substring(10, 12) + "Set the sleep time OK" ;
     }
-    return 0;
+    return "";
   }
 }
 
@@ -1662,38 +1654,33 @@ UBYTE RFID_Set_Sleep_Time(UWORD Parameter, UWORD Xpoint, UWORD Ypoint, UBYTE fon
   IDLE 模式空闲时间 IDLE Time:	0x03(3 分钟无操作自动进入 IDLE 模式，范围 0-30 分钟，
                                 0x00 表示不自动 进入 IDLE 模式)
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_Set_the_ILDE_mode(UBYTE Enter, UBYTE IDLE_Time, UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+String UHF_RFID::Set_the_ILDE_mode(UBYTE Enter, UBYTE IDLE_Time)
 {
   UBYTE a[8] = {0xBB, 0x01, 0x04, 0x00, 0x01, 0x00, 0x06, 0x7E};
 
-  RFID_Copy_command_library(32);
+  Copy_command_library(32);
 
-  RFID_ToHex(Enter, 5, 5);
-  RFID_ToHex(IDLE_Time, 7, 7);
+  ToHex(Enter, 5, 5);
+  ToHex(IDLE_Time, 7, 7);
 
-  RFID_Check_bit_accumulation();
-  RFID_Send_the_modified_command();
+  Check_bit_accumulation();
+  Send_the_modified_command();
+  Delay(20);
+  Readcallback();
 
-  RFID_Readcallback();
-
-  if (RFID_Scanwarning())
+  if (DelayScanwarning())
   {
-    return 0;
+    return "";
   }
   else
   {
 
-    if (RFID_Verify_the_return(a, 8))
+    if (Verify_the_return(a, 8))
     {
-      RFID_Return_to_convert(1);
-      M5.Lcd.drawString("ILDE time :", Xpoint, Ypoint, font_size);
-
-      M5.Lcd.drawString(String(DATA_Interim_order[7]), Xpoint + 75, Ypoint, font_size);
-
-      M5.Lcd.drawString("Set ILDE OK", Xpoint, Ypoint + 20, font_size);
-      return 1;
+      Return_to_convert(1);
+      return "ILDE time :" + String(DATA_Interim_order[7]) + "Set ILDE OK";
     }
-    return 0;
+    return "";
   }
 }
 
@@ -1716,54 +1703,56 @@ UBYTE RFID_Set_the_ILDE_mode(UBYTE Enter, UBYTE IDLE_Time, UWORD Xpoint, UWORD Y
   ReadProtect/Reset ReadProtect:	0x00(0x00 代表执行 ReadProtect，
                                   0x01 代表执行 Reset ReadProtect)
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_NXP_ReadProtect_ResetReadProtect(UDOUBLE Access_Password, UBYTE ReadProtect, UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+CardInformationInfo UHF_RFID::NXP_ReadProtect_ResetReadProtect(UDOUBLE Access_Password, UBYTE ReadProtect)
 {
   UBYTE a[5] = {0xBB, 0x01, 0xE1, 0x00, 0x10};
   UBYTE b[5] = {0xBB, 0x01, 0xE2, 0x00, 0x10};
   UBYTE e = 0;
 
-  RFID_Copy_command_library(33);
+  CardInformationInfo Cardinformation;
 
-  RFID_ToHex(Access_Password, 5, 8);
-  RFID_ToHex(ReadProtect, 9, 9);
+  Copy_command_library(33);
 
-  RFID_Check_bit_accumulation();
-  RFID_Send_the_modified_command();
+  ToHex(Access_Password, 5, 8);
+  ToHex(ReadProtect, 9, 9);
 
-  RFID_Readcallback();
+  Check_bit_accumulation();
+  Send_the_modified_command();
+  Delay(50);
+  Readcallback();
 
-  if (e = RFID_Scanwarning())
+  if (e = DelayScanwarning())
   {
 
     if (e == 0x16)
     {
-      RFID_Return_to_convert(1);
-      RFID_Access_Password_is_incorrect(Xpoint, Ypoint, font_size);
+      Return_to_convert(1);
+      Cardinformation = Access_Password_is_incorrect();
     }
-    return 0;
+    return Cardinformation;
   }
   else
   {
 
-    if (RFID_Verify_the_return(a, 5))
+    if (Verify_the_return(a, 5))
     {
-      RFID_Return_to_convert(1);
+      Return_to_convert(1);
 
-      RFID_Operation_is_successful(Xpoint, Ypoint, font_size);
+      Cardinformation = Operation_is_successful();
+      Cardinformation._Successful = "NXP ReadProtect OK";
 
-      M5.Lcd.drawString("NXP ReadProtect OK", Xpoint, Ypoint + 80, font_size);
-      return 1;
+      return Cardinformation;
     }
-    else if (RFID_Verify_the_return(b, 5))
+    else if (Verify_the_return(b, 5))
     {
-      RFID_Return_to_convert(1);
+      Return_to_convert(1);
 
-      RFID_Operation_is_successful(Xpoint, Ypoint, font_size);
+      Cardinformation = Operation_is_successful();
+      Cardinformation._Successful = "NXP Reset ReadProtect OK";
 
-      M5.Lcd.drawString("NXP Reset ReadProtect OK", Xpoint, Ypoint + 80, font_size);
-      return 1;
+      return Cardinformation;
     }
-    return 0;
+
   }
 }
 
@@ -1783,43 +1772,45 @@ UBYTE RFID_NXP_ReadProtect_ResetReadProtect(UDOUBLE Access_Password, UBYTE ReadP
   PSF:	0x01(0x01 代表设置 PSF 位为’1’，0x00 代表设置 PSF 位为’0’)
 
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_NXP_Change_EAS(UDOUBLE Access_Password, UBYTE PSF, UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+CardInformationInfo UHF_RFID::NXP_Change_EAS(UDOUBLE Access_Password, UBYTE PSF)
 {
   UBYTE a[5] = {0xBB, 0x01, 0xE3, 0x00, 0x10};
   UBYTE e = 0;
 
-  RFID_Copy_command_library(34);
+  CardInformationInfo Cardinformation;
 
-  RFID_ToHex(Access_Password, 5, 8);
-  RFID_ToHex(PSF, 9, 9);
+  Copy_command_library(34);
 
-  RFID_Check_bit_accumulation();
-  RFID_Send_the_modified_command();
+  ToHex(Access_Password, 5, 8);
+  ToHex(PSF, 9, 9);
 
-  RFID_Readcallback();
+  Check_bit_accumulation();
+  Send_the_modified_command();
 
-  if (e = RFID_Scanwarning())
+  Readcallback();
+
+  if (e = DelayScanwarning())
   {
     if (e == 0x16)
     {
-      RFID_Return_to_convert(1);
-      RFID_Access_Password_is_incorrect(Xpoint, Ypoint, font_size);
+      Return_to_convert(1);
+      Cardinformation = Access_Password_is_incorrect();
     }
-    return 0;
+    return Cardinformation;
   }
   else
   {
 
-    if (RFID_Verify_the_return(a, 5))
+    if (Verify_the_return(a, 5))
     {
-      RFID_Return_to_convert(1);
+      Return_to_convert(1);
 
-      RFID_Operation_is_successful(Xpoint, Ypoint, font_size);
+      Cardinformation = Operation_is_successful();
+      Cardinformation._Successful = "NXP Change EAS OK";
 
-      M5.Lcd.drawString("NXP Change EAS OK", Xpoint, Ypoint + 80, font_size);
-      return 1;
+      return Cardinformation;
     }
-    return 0;
+
   }
 }
 
@@ -1836,31 +1827,28 @@ UBYTE RFID_NXP_Change_EAS(UDOUBLE Access_Password, UBYTE PSF, UWORD Xpoint, UWOR
   否则标签不响应 EAS_Alarm 指令。该指令适合于电子商品防窃（盗）系统。
 
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_NXP_EAS_Alarm( UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+String UHF_RFID::NXP_EAS_Alarm()
 {
   UBYTE a[8] = {0xBB, 0x01, 0xE4, 0x00, 0x08};
 
-  RFID_Sendcommand(35);
+  Sendcommand(35);
+  Delay(20);
+  Readcallback();
 
-  RFID_Readcallback();
-
-  if (RFID_Scanwarning())
+  if (DelayScanwarning())
   {
-    return 0;
+    return "";
   }
   else
   {
 
-    if (RFID_Verify_the_return(a, 5))
+    if (Verify_the_return(a, 5))
     {
-      RFID_Return_to_convert(1);
+      Return_to_convert(1);
 
-      M5.Lcd.drawString("EAS-Alarm code :", Xpoint, Ypoint , font_size); //4’b0000-4’b1111
-
-      M5.Lcd.drawString(DATA_Str_M5led.substring(10, 26), Xpoint + 115, Ypoint, font_size);
-      return 1;
+      return "EAS-Alarm code :" + DATA_Str_M5led.substring(10, 26);
     }
-    return 0;
+    return "";
   }
 }
 
@@ -1887,46 +1875,45 @@ UBYTE RFID_NXP_EAS_Alarm( UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
   Config-Word:	0x0000(全 0 时标签返回未更改的 Config-Word，相当于读取)
 
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_NXP_Change_Config(UDOUBLE Access_Password, UWORD Config_Word, UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+CardInformationInfo UHF_RFID::NXP_Change_Config(UDOUBLE Access_Password, UWORD Config_Word)
 {
   UBYTE a[5] = {0xBB, 0x01, 0xE0, 0x00, 0x11};
   UBYTE e = 0;
 
-  RFID_Copy_command_library(36);
+  CardInformationInfo Cardinformation;
 
-  RFID_ToHex(Access_Password, 5, 8);
-  RFID_ToHex(Config_Word, 9, 10);
+  Copy_command_library(36);
 
-  RFID_Check_bit_accumulation();
-  RFID_Send_the_modified_command();
+  ToHex(Access_Password, 5, 8);
+  ToHex(Config_Word, 9, 10);
 
-  RFID_Readcallback();
+  Check_bit_accumulation();
+  Send_the_modified_command();
 
-  if (e = RFID_Scanwarning())
+  Readcallback();
+
+  if (e = DelayScanwarning())
   {
     if (e == 0x16)
     {
-      RFID_Return_to_convert(1);
-      RFID_Access_Password_is_incorrect(Xpoint, Ypoint, font_size);
+      Return_to_convert(1);
+      Cardinformation = Access_Password_is_incorrect();
     }
-    return 0;
+    return Cardinformation;
   }
   else
   {
 
-    if (RFID_Verify_the_return(a, 5))
+    if (Verify_the_return(a, 5))
     {
-      RFID_Return_to_convert(1);
+      Return_to_convert(1);
 
-      RFID_UI_PC_EPC( Xpoint,  Ypoint,  font_size);
-      M5.Lcd.drawString("Config Word :", Xpoint , Ypoint + 60, font_size); //指令参数 Config Word
+      Cardinformation = UI_PC_EPC();
+      Cardinformation._Successful = "Config Word :" + DATA_Str_M5led.substring( 40,  44) + "NXP Change Config OK";
 
-      M5.Lcd.drawString(DATA_Str_M5led.substring( 40,  44), Xpoint + 100, Ypoint + 60, font_size); //指令参数 Config Word
-
-      M5.Lcd.drawString("NXP Change Config OK", Xpoint, Ypoint + 80, font_size);
-      return 1;
+      return Cardinformation;
     }
-    return 0;
+
   }
 }
 
@@ -1954,61 +1941,57 @@ UBYTE RFID_NXP_Change_Config(UDOUBLE Access_Password, UWORD Config_Word, UWORD X
   Payload:	0x4000(QT Control，最高两个 bits 分别为 QT_SR 和 QT_MEM)
 
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_Impinj_Monza_QT(UDOUBLE Access_Password, UBYTE Read_Write, UBYTE Persistence, UWORD Payload, UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+CardInformationInfo UHF_RFID::Impinj_Monza_QT(UDOUBLE Access_Password, UBYTE Read_Write, UBYTE Persistence, UWORD Payload)
 {
   UBYTE a[5] = {0xBB, 0x01, 0xE5, 0x00, 0x11};
   UBYTE b[5] = {0xBB, 0x01, 0xE6, 0x00, 0x10};
   UBYTE e = 0;
 
-  RFID_Copy_command_library(37);
+  CardInformationInfo Cardinformation;
 
-  RFID_ToHex(Access_Password, 5, 8);
-  RFID_ToHex(Read_Write, 9, 9);
-  RFID_ToHex(Persistence, 10, 10);
-  RFID_ToHex(Payload, 11, 12);
+  Copy_command_library(37);
 
-  RFID_Check_bit_accumulation();
-  RFID_Send_the_modified_command();
+  ToHex(Access_Password, 5, 8);
+  ToHex(Read_Write, 9, 9);
+  ToHex(Persistence, 10, 10);
+  ToHex(Payload, 11, 12);
 
-  RFID_Readcallback();
+  Check_bit_accumulation();
+  Send_the_modified_command();
 
-  if (e = RFID_Scanwarning())
+  Readcallback();
+
+  if (e = DelayScanwarning())
   {
     if (e == 0x16)
     {
-      RFID_Return_to_convert(1);
-      RFID_Access_Password_is_incorrect(Xpoint, Ypoint, font_size);
+      Return_to_convert(1);
+      Cardinformation = Access_Password_is_incorrect();
     }
-    return 0;
+    return Cardinformation;
   }
   else
   {
 
-    if (RFID_Verify_the_return(a, 5))
+    if (Verify_the_return(a, 5))
     {
-      RFID_Return_to_convert(1);
+      Return_to_convert(1);
 
-      RFID_UI_PC_EPC( Xpoint,  Ypoint,  font_size);
+      Cardinformation = UI_PC_EPC();
+      Cardinformation._Successful = "QT Control :0" + DATA_Str_M5led.substring( 40,  42) + "1" + DATA_Str_M5led.substring( 42,  44) + "Read Impinj Monza QT OK";
 
-      M5.Lcd.drawString("QT Control :", Xpoint , Ypoint + 60, font_size); //指令参数 QT Control :
-      M5.Lcd.drawString("0", Xpoint + 80, Ypoint + 60, font_size); //指令参数 QT Control0 :
-      M5.Lcd.drawString("1", Xpoint + 200, Ypoint + 60, font_size); //指令参数 QT Control1 :
-
-      M5.Lcd.drawString(DATA_Str_M5led.substring( 40,  42), Xpoint + 100, Ypoint + 60, font_size); //指令参数 QT Control0 :
-      M5.Lcd.drawString(DATA_Str_M5led.substring( 42,  44), Xpoint + 180, Ypoint + 60, font_size); //指令参数 QT Control1 :
-
-      M5.Lcd.drawString("Read Impinj Monza QT OK", Xpoint, Ypoint + 80, font_size);
-      return 1;
+      return Cardinformation;
     }
-    else if (RFID_Verify_the_return(b, 5))
+    else if (Verify_the_return(b, 5))
     {
-      RFID_Return_to_convert(1);
+      Return_to_convert(1);
 
-      RFID_Operation_is_successful(Xpoint, Ypoint, font_size);
-      M5.Lcd.drawString("Write Impinj Monza QT OK", Xpoint, Ypoint + 80, font_size);
-      return 1;
+      Cardinformation = Operation_is_successful();
+      Cardinformation._Successful = "Write Impinj Monza QT OK";
+
+      return Cardinformation;
     }
-    return 0;
+
   }
 }
 
@@ -2032,66 +2015,64 @@ UBYTE RFID_Impinj_Monza_QT(UDOUBLE Access_Password, UBYTE Read_Write, UBYTE Pers
   Mask:	0x0700(当 Read/Lock 数据域为 0x00，即读取状态时，该数据域省略)
 
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_BlockPermalock(UDOUBLE Access_Password, UBYTE Read_Lock, UBYTE MemBank, UWORD BlockPtr, UBYTE BlockRange, UWORD Mask, UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+CardInformationInfo UHF_RFID::BlockPermalock(UDOUBLE Access_Password, UBYTE Read_Lock, UBYTE MemBank, UWORD BlockPtr, UBYTE BlockRange, UWORD Mask)
 {
   UBYTE a[5] = {0xBB, 0x01, 0xD3, 0x00, 0x12};
   UBYTE b[5] = {0xBB, 0x01, 0xD4, 0x00, 0x10};
   UBYTE e = 0;
 
-  RFID_Copy_command_library(38);
+  CardInformationInfo Cardinformation;
 
-  RFID_ToHex(Access_Password, 5, 8);
-  RFID_ToHex(Read_Lock, 9, 9);
-  RFID_ToHex(MemBank, 10, 10);
-  RFID_ToHex(BlockPtr, 11, 12);
-  RFID_ToHex(BlockRange, 13, 13);
-  RFID_ToHex(Mask, 14, 15);
+  Copy_command_library(38);
 
-  RFID_Check_bit_accumulation();
-  RFID_Send_the_modified_command();
+  ToHex(Access_Password, 5, 8);
+  ToHex(Read_Lock, 9, 9);
+  ToHex(MemBank, 10, 10);
+  ToHex(BlockPtr, 11, 12);
+  ToHex(BlockRange, 13, 13);
+  ToHex(Mask, 14, 15);
 
-  RFID_Readcallback();
+  Check_bit_accumulation();
+  Send_the_modified_command();
 
-  if (e = RFID_Scanwarning())
+  Readcallback();
+
+  if (e = DelayScanwarning())
   {
     if (e == 0x16)
     {
-      RFID_Return_to_convert(1);
-      RFID_Access_Password_is_incorrect(Xpoint, Ypoint, font_size);
+      Return_to_convert(1);
+      Cardinformation = Access_Password_is_incorrect();
     }
     else if (e / 0x10 == 0xE )
     {
-      RFID_Return_to_convert(1);
-      RFID_EPC_Gen2_error_code(Xpoint, Ypoint, font_size);
+      Return_to_convert(1);
+      Cardinformation = EPC_Gen2_error_code();
     }
-    return 0;
+    return Cardinformation;
   }
   else
   {
 
-    if (RFID_Verify_the_return(a, 5))
+    if (Verify_the_return(a, 5))
     {
-      RFID_Return_to_convert(1);
+      Return_to_convert(1);
 
-      RFID_UI_PC_EPC( Xpoint, Ypoint, font_size);
+      Cardinformation = UI_PC_EPC( );
+      Cardinformation._Successful = "BlockPermalock :" + DATA_Str_M5led.substring( 40,  44) + "Read Impinj Monza QT OK";
 
-      M5.Lcd.drawString("BlockPermalock :", Xpoint , Ypoint + 60, font_size); //指令参数 QT Control :
-
-      M5.Lcd.drawString(DATA_Str_M5led.substring( 40,  44), Xpoint + 100, Ypoint + 60, font_size); //指令参数 QT Control0 :
-
-      M5.Lcd.drawString("Read Impinj Monza QT OK", Xpoint, Ypoint + 80, font_size);
-
-      return 1;
+      return Cardinformation;
     }
-    else if (RFID_Verify_the_return(b, 5))
+    else if (Verify_the_return(b, 5))
     {
-      RFID_Return_to_convert(1);
+      Return_to_convert(1);
 
-      RFID_Operation_is_successful(Xpoint, Ypoint, font_size);
-      M5.Lcd.drawString("Lock Impinj Monza QT OK", Xpoint, Ypoint + 80, font_size);
+      Cardinformation = Operation_is_successful();
+      Cardinformation._Successful = "Lock Impinj Monza QT OK";
 
-      return 1;
+
+      return Cardinformation;
     }
-    return 0;
+
   }
 }

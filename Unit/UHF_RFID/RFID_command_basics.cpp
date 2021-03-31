@@ -2,7 +2,7 @@
 #include "RFID_command.h"
 #include <string>
 
-void RFID_Sendcommand(UBYTE com_nub)
+void UHF_RFID::Sendcommand(UBYTE com_nub)
 {
   UBYTE b = 0;
   while (RFID_cmdnub[com_nub][b] != 0x7E)
@@ -14,7 +14,7 @@ void RFID_Sendcommand(UBYTE com_nub)
   Serial2.write("\n\r");
 }
 
-void RFID_Send_the_modified_command()
+void UHF_RFID::Send_the_modified_command()
 {
   UBYTE b = 0;//Send instructions 发送指令
 
@@ -28,22 +28,21 @@ void RFID_Send_the_modified_command()
 
 }
 
-void RFID_Readcallback()
+void UHF_RFID::Readcallback()
 {
   while (Serial2.available())
   {
-    RFID_Delay(2);
+    Delay(2);
     DATA_I[DATA_I_NUB] = Serial2.read();
-    if (RFID_debug == 1)
+    if (_debug == 1)
     {
-      Serial.write(DATA_I[DATA_I_NUB]);
-
+      Serial.print(DATA_Str_Serial);
     }
     DATA_I_NUB++;
   }
 }
 
-void RFID_clean_data()
+void UHF_RFID::clean_data()
 {
   DATA_Str_Serial = "";
   DATA_Str_M5led = "";
@@ -60,7 +59,7 @@ void RFID_clean_data()
 }
 
 
-UBYTE RFID_Return_to_convert(UBYTE mod)
+UBYTE UHF_RFID::Return_to_convert(UBYTE mod)
 {
   DATA_Str_M5led = "";
   switch (mod)
@@ -97,7 +96,7 @@ UBYTE RFID_Return_to_convert(UBYTE mod)
 
 }
 
-UDOUBLE RFID_String_to_command_frame(String str_epc) //EPC string to command frame EPC字符串转命令帧
+UDOUBLE UHF_RFID::String_to_command_frame(String str_epc) //EPC string to command frame EPC字符串转命令帧
 {
 
   UDOUBLE b;
@@ -168,107 +167,87 @@ UDOUBLE RFID_String_to_command_frame(String str_epc) //EPC string to command fra
 }
 
 
-void RFID_Warningmessage(UBYTE nub)
+void UHF_RFID::Warningmessage(UBYTE nub)
 {
   switch (nub)
   {
     case 0x17:
-      DATA_Str_M5led = "Warning 17";
       DATA_Str_Serial = "Error instruction code in command frame.";
       //命令帧中指令代码错误。
       break;
     case 0x20:
-      DATA_Str_M5led = "Warning 20";
       DATA_Str_Serial = "Frequency-hopping search channel timeout.All channels are occupied during this time.";
       //跳频搜索信道超时。所有信道在这段时间内都被占用。
       break;
     case 0x15:
-      DATA_Str_M5led = "Warning 15";
       DATA_Str_Serial = "The polling operation failed.No tag is returned or CRC error is returned for data.";
       //轮询操作失败。没有标签返回或者返回数据 CRC 校验错误。
       break;
     case 0x16:
-      DATA_Str_M5led = "Warning 16";
       DATA_Str_Serial = "Failed to access the label, it is possible that the access password password is wrong";
       //访问标签失败，有可能是访问密码 password 不对
       break;
     case 0x09:
-      DATA_Str_M5led = "Warning 09";
       DATA_Str_Serial = "Failed to read the label data save area.The tag does not return or returns a CRC error in the data" ;
       //读标签数据存数区失败。标签没有返回或者返回数据 CRC 校验错误
       break;
     case 0xA0:
-      DATA_Str_M5led = "Warning A0";
       DATA_Str_Serial = "Error reading label data store.The returned Code is 0xA0 bit or Error Code To the.";
       //读标签数据存储区错误。返回的代码由 0xA0 位或  Error Code 得到。
       break;
     case 0x10:
-      DATA_Str_M5led = "Warning 10";
       DATA_Str_Serial = "Write label data save failed.The tag does not return or returns a CRC error in the dataBy mistake.";
       //写标签数据存数区失败。标签没有返回或者返回数据 CRC 校验错误。
       break;
     case 0xB0:
-      DATA_Str_M5led = "Warning B0";
       DATA_Str_Serial = "Error writing label data store.The returned Code is given by the 0xB0 bit or Error Code To the.";
       //写标签数据存储区错误。返回的代码由 0xB0 位或  Error Code 得到。
       break;
     case 0x13:
-      DATA_Str_M5led = "Warning 13";
       DATA_Str_Serial = "Failed to lock label data save area.The tag does not return or returns a CRC error in the data By mistake.";
       //锁定标签数据存数区失败。标签没有返回或者返回数据 CRC 校验错误。
       break;
     case 0xC0:
-      DATA_Str_M5led = "Warning C0";
       DATA_Str_Serial = "Error locking label data store.The Code returned is 0xC0 bit or Error Code Get it.";
       //锁定标签数据存储区错误。返回的代码由 0xC0 位或  Error Code得到。
       break;
     case 0x12:
-      DATA_Str_M5led = "Warning 12";
       DATA_Str_Serial = "Inactivate tag failed.The tag does not return or returns a CRC error in the data.";
       //灭活标签失败。标签没有返回或者返回数据 CRC 校验错误。
       break;
     case 0xD0:
-      DATA_Str_M5led = "Warning D0";
       DATA_Str_Serial = "Inactivated tag error.The returned Code is given by the 0xC0 bit or Error Code.";
       //灭活标签错误。返回的代码由 0xC0 位或 Error Code 得到。
       break;
     case 0x14:
-      DATA_Str_M5led = "Warning 14";
       DATA_Str_Serial = "BlockPermalock execution failed.The tag does not return or returns a CRC check of the data Error.";
       //BlockPermalock 执行失败。标签没有返回或者返回数据 CRC 校验错误。
       break;
     case 0xE0:
-      DATA_Str_M5led = "Warning E0";
       DATA_Str_Serial = "BlockPermalock errors.";
       //BlockPermalock 错误。
       break;
     case 0x1A:
-      DATA_Str_M5led = "Warning 1A";
       DATA_Str_Serial = "The changeConfig directive failed. The tag does not return data or a return number Error check against CRC.";
       //ChangeConfig 指令失败，标签没有返回数据或者返回数据 CRC 校验错误。
       break;
     case 0x2A:
-      DATA_Str_M5led = "Warning 2A";
       DATA_Str_Serial = "The ReadProtect instruction failed, the label does not return data or returns data CRC check error.";
       //ReadProtect 指令失败，标签没有返回数据或者返回数据CRC 校验错误。
       break;
     case 0x2B:
-      DATA_Str_M5led = "Warning 2B";
       DATA_Str_Serial = "Reset ReadProtect instruction failed, the label did not return data or returnBack data CRC check error.";
       //Reset ReadProtect 指令失败，标签没有返回数据或者返回数据 CRC 校验错误。
       break;
     case 0x1B:
-      DATA_Str_M5led = "Warning 1B";
       DATA_Str_Serial = "The CHANGE EAS directive failed, and the label did not return data or returned data CRC check error.";
       //Change EAS 指令失败，标签没有返回数据或者返回数据CRC 校验错误。
       break;
     case 0x1D:
-      DATA_Str_M5led = "Warning 1D";
       DATA_Str_Serial = "The EAS_ALARM instruction failed with no label returning the correct ALARM CODE.";
       //EAS_Alarm 指令失败，没有标签返回正确 Alarm Code。
       break;
     case 0x2E:
-      DATA_Str_M5led = "Warning 2E";
       DATA_Str_Serial = "Qt instruction failed, tag did not return data or returned data CRC calibration Check error.";
       //QT 指令失败，标签没有返回数据或者返回数据 CRC 校验错误。
       break;
@@ -277,7 +256,6 @@ void RFID_Warningmessage(UBYTE nub)
     case 0xC3:
     case 0xD3:
     case 0xE3:
-      DATA_Str_M5led = "Memory overrun";
       DATA_Str_Serial = "Memory overrun.";
       //The specified label data store does not exist;Or the label does not support EPCs of a specified length, such as XPC.
       //指定的标签数据存储区不存在；或者该标签不支持指定长度的 EPC，比如 XPC。
@@ -287,7 +265,6 @@ void RFID_Warningmessage(UBYTE nub)
     case 0xC4:
     case 0xD4:
     case 0xE4:
-      DATA_Str_M5led = "Memory locked";
       DATA_Str_Serial = "Memory locked.";
       //The specified label data store is locked and/or permanently locked, and the locked state is writable or unreadable
       //指定的标签数据存储区被锁定并且/或者是永久锁定，而且锁定状态为不可写或不可读
@@ -297,7 +274,6 @@ void RFID_Warningmessage(UBYTE nub)
     case 0xCB:
     case 0xDB:
     case 0xEB:
-      DATA_Str_M5led = "Insufficient power";
       DATA_Str_Serial = "Insufficient power.";
       //The tag did not receive enough energy to write
       //标签没有收到足够的能量来进行写操作
@@ -307,7 +283,6 @@ void RFID_Warningmessage(UBYTE nub)
     case 0xCF:
     case 0xDF:
     case 0xEF:
-      DATA_Str_M5led = "Non-specific error";
       DATA_Str_Serial = "Non-specific error.";
       //The tag does not support error-code returns
       //标签不支持 Error-code 返回
@@ -318,22 +293,20 @@ void RFID_Warningmessage(UBYTE nub)
 
 }
 
-void RFID_Delay(unsigned long xms)
+void UHF_RFID::Delay(unsigned long xms)
 {
   delay(xms);
 }
 
 
-UBYTE RFID_Scanwarning(UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+UBYTE  UHF_RFID::DelayScanwarning()
 {
   UDOUBLE i = 0;
   for ( i = 0; i < sizeof(DATA_I) - 6; i++)
   {
     if (DATA_I[i] == 0xBB && DATA_I[i + 2] == 0xFF )
     {
-      RFID_Warningmessage(DATA_I[i + 5]);
-      M5.Lcd.drawString(DATA_Str_M5led, Xpoint, Ypoint, font_size);
-      Serial.print(DATA_Str_Serial);
+      Warningmessage(DATA_I[i + 5]);
 
       return DATA_I[i + 5];
     }
@@ -343,7 +316,8 @@ UBYTE RFID_Scanwarning(UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
   return 0;
 
 }
-void RFID_Copy_command_library( UBYTE com_nub)
+
+void UHF_RFID::Copy_command_library( UBYTE com_nub)
 {
 
   while (RFID_cmdnub[com_nub][DATA_Interim_b] != 0x7E) //First copy the command library 先复制命令库
@@ -354,7 +328,7 @@ void RFID_Copy_command_library( UBYTE com_nub)
   DATA_Interim_order[DATA_Interim_b] = 0x7E;
 }
 
-void RFID_Check_bit_accumulation()
+void UHF_RFID::Check_bit_accumulation()
 {
   DATA_Interim_order[DATA_Interim_b - 1] = 0x00;                      //Check bit accumulation 校验位累加
 
@@ -368,7 +342,7 @@ void RFID_Check_bit_accumulation()
   }
 }
 
-UWORD RFID_ToHex(UDOUBLE parameters, UBYTE MSB, UBYTE LSB)
+UWORD UHF_RFID::ToHex(UDOUBLE parameters, UBYTE MSB, UBYTE LSB)
 {
 
   UBYTE i = LSB - MSB;
@@ -397,7 +371,7 @@ UWORD RFID_ToHex(UDOUBLE parameters, UBYTE MSB, UBYTE LSB)
 }
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-UBYTE RFID_Verify_the_return(UBYTE a[] , UBYTE size_v)  //Verify return information 验证返回信息
+UBYTE UHF_RFID::Verify_the_return(UBYTE a[] , UBYTE size_v)  //Verify return information 验证返回信息
 {
   UBYTE c = 0;
 
@@ -424,7 +398,7 @@ UBYTE RFID_Verify_the_return(UBYTE a[] , UBYTE size_v)  //Verify return informat
 
   用于将字符串EPC转命令帧
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_EPC_string_to_command_frame(String str_epc, UBYTE MSB, UBYTE LSB)
+UBYTE UHF_RFID::EPC_string_to_command_frame(String str_epc, UBYTE MSB, UBYTE LSB)
 {
   UBYTE b  = 0;
   b = LSB - MSB;
@@ -435,60 +409,76 @@ UBYTE RFID_EPC_string_to_command_frame(String str_epc, UBYTE MSB, UBYTE LSB)
 
   if (b == 11)
   {
-    RFID_ToHex(RFID_String_to_command_frame(d1), MSB, MSB + 3);
-    RFID_ToHex(RFID_String_to_command_frame(d2), MSB + 4, MSB + 7);
-    RFID_ToHex(RFID_String_to_command_frame(d3), MSB + 8, MSB + 11);
+    ToHex(String_to_command_frame(d1), MSB, MSB + 3);
+    ToHex(String_to_command_frame(d2), MSB + 4, MSB + 7);
+    ToHex(String_to_command_frame(d3), MSB + 8, MSB + 11);
   }
 }
 
-UBYTE RFID_Access_Password_is_incorrect( UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+CardInformationInfo UHF_RFID::Access_Password_is_incorrect()
 {
-  M5.Lcd.drawString("The Access Password is incorrect", Xpoint, Ypoint, font_size); 
-  M5.Lcd.drawString("UL :", Xpoint, Ypoint + 20, font_size); 
-  M5.Lcd.drawString("PC :", Xpoint , Ypoint + 40, font_size); 
-  M5.Lcd.drawString("EPC :", Xpoint , Ypoint + 60, font_size); 
 
-  M5.Lcd.drawString(DATA_Str_M5led.substring( 12,  14), Xpoint + 35, Ypoint + 20, font_size); 
-  M5.Lcd.drawString(DATA_Str_M5led.substring( 14,  18), Xpoint + 35, Ypoint + 40, font_size); 
-  M5.Lcd.drawString(DATA_Str_M5led.substring( 18,  42), Xpoint + 40 , Ypoint + 60, font_size); 
+  CardInformationInfo Cardinformation;
+
+  Cardinformation._UL = DATA_Str_M5led.substring( 12,  14);
+  Cardinformation._PC = DATA_Str_M5led.substring( 14,  18);
+  Cardinformation._EPC =DATA_Str_M5led.substring( 18,  42);
+  Cardinformation._Parameter ="";
+  Cardinformation._ErrorCode ="";
+  Cardinformation._Error = "The Access Password is incorrect";
+  Cardinformation._Data ="";
+  Cardinformation._Successful ="";
+
+  return Cardinformation;
+}
+
+CardInformationInfo UHF_RFID::EPC_Gen2_error_code()
+{
+  CardInformationInfo Cardinformation;
+
+  Cardinformation._UL = DATA_Str_M5led.substring( 12,  14);
+  Cardinformation._PC = DATA_Str_M5led.substring( 14,  18);
+  Cardinformation._EPC =DATA_Str_M5led.substring( 18,  42);
+  Cardinformation._Parameter ="";
+  Cardinformation._ErrorCode =DATA_Str_M5led.substring( 10,  12);
+  Cardinformation._Error = "EPC Gen2 error code";
+  Cardinformation._Data ="";
+  Cardinformation._Successful ="";
+  
+  return Cardinformation;
 
 }
 
-UBYTE RFID_EPC_Gen2_error_code( UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+CardInformationInfo UHF_RFID::Operation_is_successful()
 {
-  M5.Lcd.drawString("EPC Gen2 error code", Xpoint, Ypoint, font_size); 
-  M5.Lcd.drawString("UL :", Xpoint, Ypoint + 20, font_size); 
-  M5.Lcd.drawString("PC :", Xpoint , Ypoint + 40, font_size); 
-  M5.Lcd.drawString("EPC :", Xpoint , Ypoint + 60, font_size); 
-  M5.Lcd.drawString("Error Code :", Xpoint , Ypoint + 80, font_size); //EPC Gen2 Error Code
+  CardInformationInfo Cardinformation;
 
-  M5.Lcd.drawString(DATA_Str_M5led.substring( 12,  14), Xpoint + 35, Ypoint + 20, font_size); 
-  M5.Lcd.drawString(DATA_Str_M5led.substring( 14,  18), Xpoint + 35, Ypoint + 40, font_size); 
-  M5.Lcd.drawString(DATA_Str_M5led.substring( 18,  42), Xpoint + 40 , Ypoint + 60, font_size); 
-  M5.Lcd.drawString(DATA_Str_M5led.substring( 10,  12), Xpoint + 85 , Ypoint + 80, font_size); //EPC Gen2 Error Code
+  Cardinformation._UL = DATA_Str_M5led.substring( 10,  12);
+  Cardinformation._PC = DATA_Str_M5led.substring( 12,  16);
+  Cardinformation._EPC =DATA_Str_M5led.substring( 16,  40);
+  Cardinformation._Parameter =DATA_Str_M5led.substring( 40,  42);
+  Cardinformation._ErrorCode ="";
+  Cardinformation._Error = "";
+  Cardinformation._Data ="";
+  Cardinformation._Successful ="";
+
+  return Cardinformation;
 
 }
 
-UBYTE RFID_Operation_is_successful( UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
+CardInformationInfo UHF_RFID::UI_PC_EPC()
 {
-  M5.Lcd.drawString("UL :", Xpoint, Ypoint, font_size); 
-  M5.Lcd.drawString("PC :", Xpoint , Ypoint + 20, font_size); 
-  M5.Lcd.drawString("EPC :", Xpoint , Ypoint + 40, font_size); 
-  M5.Lcd.drawString("Parameter :", Xpoint , Ypoint + 60, font_size); //Instruction Parameter Parameter: 0x00(successful execution) 指令参数 Parameter:	0x00(执行成功)
+  CardInformationInfo Cardinformation;
 
-  M5.Lcd.drawString(DATA_Str_M5led.substring( 10,  12), Xpoint + 35, Ypoint , font_size); 
-  M5.Lcd.drawString(DATA_Str_M5led.substring( 12,  16), Xpoint + 35, Ypoint + 20, font_size); 
-  M5.Lcd.drawString(DATA_Str_M5led.substring( 16,  40), Xpoint + 40 , Ypoint + 40, font_size); 
-  M5.Lcd.drawString(DATA_Str_M5led.substring( 40,  42), Xpoint + 80, Ypoint + 60, font_size); //Instruction Parameter Parameter 指令参数 Parameter
-}
+  Cardinformation._UL = DATA_Str_M5led.substring( 10,  12);
+  Cardinformation._PC = DATA_Str_M5led.substring( 12,  16);
+  Cardinformation._EPC =DATA_Str_M5led.substring( 16,  40);
+  Cardinformation._Parameter ="";
+  Cardinformation._ErrorCode ="";
+  Cardinformation._Error = "";
+  Cardinformation._Data ="";
+  Cardinformation._Successful ="";
+  
+  return Cardinformation;
 
-UBYTE RFID_UI_PC_EPC( UWORD Xpoint, UWORD Ypoint, UBYTE font_size)
-{
-  M5.Lcd.drawString("UL :", Xpoint, Ypoint, font_size); 
-  M5.Lcd.drawString("PC :", Xpoint , Ypoint + 20, font_size); 
-  M5.Lcd.drawString("EPC :", Xpoint , Ypoint + 40, font_size); 
-
-  M5.Lcd.drawString(DATA_Str_M5led.substring( 10,  12), Xpoint + 35, Ypoint , font_size); 
-  M5.Lcd.drawString(DATA_Str_M5led.substring( 12,  16), Xpoint + 35, Ypoint + 20, font_size); 
-  M5.Lcd.drawString(DATA_Str_M5led.substring( 16,  40), Xpoint + 40 , Ypoint + 40, font_size); 
 }

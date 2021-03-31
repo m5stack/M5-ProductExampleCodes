@@ -7,15 +7,151 @@
 #define UWORD   uint16_t
 #define UDOUBLE uint32_t
 
-extern UBYTE RFID_debug;
 
-extern String DATA_Str_Serial;
-extern String DATA_Str_M5led;
-extern UBYTE DATA_I[4096];  //Used to store distance data
-extern UWORD DATA_I_NUB;
-extern UBYTE DATA_Interim_order[40];
-extern UBYTE DATA_Interim_b;
-extern UBYTE FLAH_S;
+struct CardpropertiesInfo
+{
+  String _RSSI;
+  String _PC;
+  String _EPC;
+  String _CRC;
+  String _ERROR;
+};
+
+struct ManyInfo
+{
+  int len;
+  CardpropertiesInfo *card;
+};
+
+struct SelectInfo
+{
+  String Mask;
+  String SelParam;
+  String Ptr;
+  String MaskLen;
+  String Truncate;
+};
+
+struct CardInformationInfo
+{
+  String _UL;
+  String _PC;
+  String _EPC;
+  String _Parameter;
+  String _ErrorCode;
+  String _Error;
+  String _Data;
+  String _Successful;
+};
+
+struct QueryInfo
+{
+  String  QueryParameter;
+  String  DR;
+  String  M;
+  String  TRext;
+  String  Sel;
+  String  Session;
+  String  Target;
+  String  Q;
+};
+
+struct ReadInfo
+{
+  String Region;
+  String Channel_Index;
+  String Pow;
+  String Mixer_G;
+  String IF_G;
+  String Thrd;
+
+};
+
+struct TestInfo
+{
+  String CH_L;
+  String CH_H;
+  String Data[20];
+};
+
+
+
+
+class UHF_RFID
+{
+
+  public:
+    UBYTE _debug;
+    
+    void Sendcommand(UBYTE com_nub);
+    void Send_the_modified_command();
+    void Readcallback();
+    void clean_data();
+    UBYTE Return_to_convert(UBYTE mod);
+    UDOUBLE String_to_command_frame(String str_epc);
+    void Warningmessage(UBYTE nub);
+    void Delay(unsigned long xms);
+    UBYTE DelayScanwarning();
+    void Copy_command_library( UBYTE com_nub);
+    void Check_bit_accumulation();
+    UWORD ToHex(UDOUBLE parameters, UBYTE MSB, UBYTE LSB);
+    UBYTE Verify_the_return(UBYTE a[] , UBYTE size_v) ;
+    UBYTE EPC_string_to_command_frame(String str_epc, UBYTE MSB, UBYTE LSB);
+    CardInformationInfo Access_Password_is_incorrect();
+    CardInformationInfo EPC_Gen2_error_code();
+    CardInformationInfo Operation_is_successful();
+    CardInformationInfo UI_PC_EPC();
+
+    String Query_hardware_version();
+    String Query_software_version();
+    String Inquire_manufacturer();
+    CardpropertiesInfo A_single_poll_of_instructions();
+    ManyInfo Multiple_polling_instructions(UWORD cycle_nub);
+    String Stop_the_multiple_poll_directive();
+    String Set_the_select_parameter_directive(String str_epc, UBYTE SelParam = 0x01, UDOUBLE Ptr = 0x20, UBYTE MaskLen = 0x60, UBYTE Truncate = 0x0);
+    SelectInfo Get_the_select_parameter();
+    String Set_the_Select_mode(UBYTE Select_mode = 0x01);
+    CardInformationInfo Read_the_label_data_store(UDOUBLE Access_Password , UBYTE MemBank = 0x03, UWORD SA = 0x0000, UWORD DL = 0x0002);
+    CardInformationInfo The_label_store_writes_data(UDOUBLE Access_Password , UBYTE MemBank = 0x03, UWORD SA = 0x0000, UWORD DL = 0x0002, UDOUBLE DT = 0x12345678);
+    CardInformationInfo Lock_the_label_data_store(UDOUBLE Access_Password  , UBYTE Action_nub = 1, UBYTE Action = 0b00);
+    CardInformationInfo Inactivated_label(UDOUBLE Kill_Password);
+    UBYTE Set_the_communication_baud_rate(UWORD Pow = 0x480);
+    QueryInfo Get_the_Query_parameter();
+    String set_the_Query_parameter(UBYTE Sel = 0b00, UBYTE Session = 0b00, UBYTE Target = 0b0, UWORD Q = 0b0100);
+    String Set_up_work_area(UBYTE Region = 01);
+    ReadInfo Read_working_area();
+    String Set_up_working_channel(UBYTE CH_Index = 0x01);
+    ReadInfo Read_working_channel();
+    String Set_up_automatic_frequency_modulation(UWORD Parameter = 0xff);
+    String Insert_working_channel(UBYTE CH_Cnt = 0x05, UBYTE CH_list_1 = 0x01, UBYTE CH_list_2 = 0x02, UBYTE CH_list_3 = 0x03, UBYTE CH_list_4 = 0x04, UBYTE CH_list_5 = 0x05);
+    ReadInfo Read_transmitting_power();
+    String Set_transmission_Power(UWORD Pow = 2000);
+    String Sets_to_transmit_a_continuous_carrier(UWORD Parameter = 0xFF);
+    ReadInfo Read_receive_demodulator_parameters();
+    String Sets_the_receiv_demodulator_parameters(UBYTE Mixer_G = 0x03, UBYTE IF_G = 0x06, UWORD Thrd = 0x01B0);
+    TestInfo Test_the_RF_input_blocking_signal();
+    TestInfo Test_the_RSSI_input_signal();
+    String Set_module_hibernation();
+    String Set_Sleep_Time(UWORD Parameter = 0x00);
+    String Set_the_ILDE_mode(UBYTE Enter = 0x00, UBYTE IDLE_Time = 0x00);
+    CardInformationInfo NXP_ReadProtect_ResetReadProtect(UDOUBLE Access_Password, UBYTE ReadProtect = 0x00);
+    CardInformationInfo NXP_Change_EAS(UDOUBLE Access_Password, UBYTE PSF = 0x01);
+    String NXP_EAS_Alarm();
+    CardInformationInfo NXP_Change_Config(UDOUBLE Access_Password, UWORD Config_Word = 0x0000);
+    CardInformationInfo Impinj_Monza_QT(UDOUBLE Access_Password, UBYTE Read_Write = 0x00, UBYTE Persistence = 0x01, UWORD Payload = 0x4000);
+    CardInformationInfo BlockPermalock(UDOUBLE Access_Password, UBYTE Read_Lock = 0x00, UBYTE MemBank = 0x03, UWORD BlockPtr = 0x00, UBYTE BlockRange = 0x01, UWORD Mask = 0x0700);
+
+
+  private:
+    CardpropertiesInfo *card;
+    String DATA_Str_M5led = "";
+    String DATA_Str_Serial = "";
+    UBYTE DATA_I[4096] = {0,};  //Used to store distance data
+    UWORD DATA_I_NUB = 0;
+    UBYTE DATA_Interim_order[40] = {0,};
+    UBYTE DATA_Interim_b = 0;
+};
+
 
 
 const UWORD RFID_cmdnub[39][26] =
@@ -24,8 +160,8 @@ const UWORD RFID_cmdnub[39][26] =
   {0xBB, 0x00, 0x03, 0x00, 0x01, 0x01, 0x05, 0x7E,},       //1. Software version 1.软件版本
   {0xBB, 0x00, 0x03, 0x00, 0x01, 0x02, 0x06, 0x7E,},       //2.manufacturers  2.制造商
   {0xBB, 0x00, 0x22, 0x00, 0x00, 0x22, 0x7E,},             //3. Single polling instruction 3.单次轮询指令
-  {0xBB, 0x00, 0x27, 0x00, 0x03, 0x22, 0x27, 0x10, 0x83, 0x7E,}, //4. Multiple polling instructions 4.多次轮询指令 
-  {0xBB, 0x00, 0x28, 0x00, 0x00, 0x28, 0x7E,},             //5. Stop multiple polling instructions 5.停止多次轮询指令 
+  {0xBB, 0x00, 0x27, 0x00, 0x03, 0x22, 0x27, 0x10, 0x83, 0x7E,}, //4. Multiple polling instructions 4.多次轮询指令
+  {0xBB, 0x00, 0x28, 0x00, 0x00, 0x28, 0x7E,},             //5. Stop multiple polling instructions 5.停止多次轮询指令
   { 0xBB, 0x00, 0x0C, 0x00, 0x13, 0x01, 0x00, 0x00, 0x00, 0x20,
     0x60, 0x00, 0x30, 0x75, 0x1F, 0xEB, 0x70, 0x5C, 0x59, 0x04,
     0xE3, 0xD5, 0x0D, 0x70, 0xAD, 0x7E,
@@ -81,64 +217,9 @@ const UWORD RFID_cmdnub[39][26] =
 
 
 
-void RFID_Sendcommand(UBYTE com_nub);
-void RFID_Send_the_modified_command();
-void RFID_Readcallback();
-void RFID_clean_data();
-UBYTE RFID_Return_to_convert(UBYTE mod);
-UDOUBLE RFID_String_to_command_frame(String str_epc);
-void RFID_Warningmessage(UBYTE nub);
-void RFID_Delay(unsigned long xms);
-void RFID_Copy_command_library( UBYTE com_nub);
-void RFID_Check_bit_accumulation();
-UWORD RFID_ToHex(UDOUBLE parameters, UBYTE MSB, UBYTE LSB);
-UBYTE RFID_Verify_the_return(UBYTE a[] , UBYTE size_v) ;
-UBYTE RFID_EPC_string_to_command_frame(String str_epc, UBYTE MSB, UBYTE LSB);
-UBYTE RFID_Access_Password_is_incorrect( UWORD Xpoint, UWORD Ypoint, UBYTE font_size);
-UBYTE RFID_EPC_Gen2_error_code( UWORD Xpoint, UWORD Ypoint, UBYTE font_size);
-UBYTE RFID_Operation_is_successful( UWORD Xpoint, UWORD Ypoint, UBYTE font_size);
-UBYTE RFID_UI_PC_EPC( UWORD Xpoint, UWORD Ypoint, UBYTE font_size);
 
 
-UBYTE RFID_Scanwarning(UWORD Xpoint = 0, UWORD Ypoint = 200, UBYTE font_size = 2);
-UBYTE RFID_Query_hardware_version(UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_Query_software_version(UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_Inquire_manufacturer(UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_A_single_poll_of_instructions(UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_Multiple_polling_instructions(UWORD cycle_nub = 10, UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_Stop_the_multiple_poll_directive( UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_Set_the_select_parameter_directive(String str_epc, UBYTE SelParam = 0x01, UDOUBLE Ptr = 0x20, UBYTE MaskLen = 0x60, UBYTE Truncate = 0x0, UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_Get_the_select_parameter(UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_Set_the_Select_mode(UBYTE Select_mode = 0x01, UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_Read_the_label_data_store(UDOUBLE Access_Password , UBYTE MemBank = 0x03, UWORD SA = 0x0000, UWORD DL = 0x0002, UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_The_label_store_writes_data(UDOUBLE Access_Password , UBYTE MemBank = 0x03, UWORD SA = 0x0000, UWORD DL = 0x0002, UDOUBLE DT = 0x12345678, UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_Lock_the_label_data_store(UDOUBLE Access_Password  , UBYTE Action_nub = 1, UBYTE Action = 0b00, UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_Inactivated_label(UDOUBLE Kill_Password, UWORD Xpoint, UWORD Ypoint, UBYTE font_size);/*~~~~~~~~~~~~~~~~~~~~~~~*/
-UBYTE RFID_Set_the_communication_baud_rate(UWORD Pow = 0x480, UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_Get_the_Query_parameter( UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_set_the_Query_parameter(UBYTE Sel = 0b00, UBYTE Session = 0b00, UBYTE Target = 0b0, UWORD Q = 0b0100, UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_Set_up_work_area(UBYTE Region = 01, UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_Read_working_area( UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_Set_up_working_channel(UBYTE CH_Index = 0x01, UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_Read_working_channel( UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_Set_up_automatic_frequency_modulation(UWORD Parameter = 0xff, UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_Insert_working_channel(UBYTE CH_Cnt = 0x05, UBYTE CH_list_1 = 0x01, UBYTE CH_list_2 = 0x02, UBYTE CH_list_3 = 0x03, UBYTE CH_list_4 = 0x04, UBYTE CH_list_5 = 0x05, UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_Read_transmitting_power( UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_Set_transmission_Power(UWORD Pow = 2000, UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_Sets_to_transmit_a_continuous_carrier(UWORD Parameter = 0xFF, UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_Read_receive_demodulator_parameters( UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_Sets_the_receiv_demodulator_parameters(UBYTE Mixer_G = 0x03, UBYTE IF_G = 0x06, UWORD Thrd = 0x01B0, UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_Test_the_RF_input_blocking_signal( UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_Test_the_RSSI_input_signal( UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
 
-UBYTE RFID_Set_module_hibernation( UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_Set_Sleep_Time(UWORD Parameter = 0x00, UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_Set_the_ILDE_mode(UBYTE Enter = 0x00, UBYTE IDLE_Time = 0x00 , UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_NXP_ReadProtect_ResetReadProtect(UDOUBLE Access_Password, UBYTE ReadProtect = 0x00, UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_NXP_Change_EAS(UDOUBLE Access_Password, UBYTE PSF = 0x01,  UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_NXP_EAS_Alarm(  UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_NXP_Change_Config(UDOUBLE Access_Password, UWORD Config_Word = 0x0000, UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_Impinj_Monza_QT(UDOUBLE Access_Password, UBYTE Read_Write = 0x00, UBYTE Persistence = 0x01, UWORD Payload = 0x4000,  UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
-UBYTE RFID_BlockPermalock(UDOUBLE Access_Password, UBYTE Read_Lock = 0x00, UBYTE MemBank = 0x03, UWORD BlockPtr = 0x00, UBYTE BlockRange = 0x01, UWORD Mask = 0x0700,  UWORD Xpoint = 0, UWORD Ypoint = 0, UBYTE font_size = 2);
+
 
 #endif
