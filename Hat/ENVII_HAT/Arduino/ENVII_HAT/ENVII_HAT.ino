@@ -3,7 +3,7 @@
     Github: https://github.com/adafruit/Adafruit_BMP280_Library
 */
 
-#include <M5StickC.h>
+#include <M5StickCPlus.h>
 #include "SHT3X.h"
 #include <Wire.h>
 #include "Adafruit_Sensor.h"
@@ -12,7 +12,8 @@
 #include "bmm150_defs.h"
 SHT3X sht3x; 
 BMM150 bmm = BMM150();
-bmm150_mag_data value_offset;
+bmm150_mag_data value_offset_min;
+bmm150_mag_data value_offset_max;
 Adafruit_BMP280 bme;
 
 float tmp = 0.0;
@@ -21,72 +22,66 @@ float pressure = 0.0;
 
 void calibrate(uint32_t timeout)
 {
-  int16_t value_x_min = 0;
-  int16_t value_x_max = 0;
-  int16_t value_y_min = 0;
-  int16_t value_y_max = 0;
-  int16_t value_z_min = 0;
-  int16_t value_z_max = 0;
   uint32_t timeStart = 0;
 
   bmm.read_mag_data();  
-  value_x_min = bmm.raw_mag_data.raw_datax;
-  value_x_max = bmm.raw_mag_data.raw_datax;
-  value_y_min = bmm.raw_mag_data.raw_datay;
-  value_y_max = bmm.raw_mag_data.raw_datay;
-  value_z_min = bmm.raw_mag_data.raw_dataz;
-  value_z_max = bmm.raw_mag_data.raw_dataz;
+  value_offset_min.x = bmm.raw_mag_data.raw_datax;
+  value_offset_max.x = bmm.raw_mag_data.raw_datax;
+  value_offset_min.y = bmm.raw_mag_data.raw_datay;
+  value_offset_max.y = bmm.raw_mag_data.raw_datay;
+  value_offset_min.z = bmm.raw_mag_data.raw_dataz;
+  value_offset_max.z = bmm.raw_mag_data.raw_dataz;
   delay(100);
 
   timeStart = millis();
   
-  while((millis() - timeStart) < timeout)
+  while((millis() - timeStart) < timeout*1000)
   {
     bmm.read_mag_data();
     
     /* Update x-Axis max/min value */
-    if(value_x_min > bmm.raw_mag_data.raw_datax)
+    if(value_offset_min.x > bmm.raw_mag_data.raw_datax)
     {
-      value_x_min = bmm.raw_mag_data.raw_datax;
+      value_offset_min.x = bmm.raw_mag_data.raw_datax;
       // Serial.print("Update value_x_min: ");
-      // Serial.println(value_x_min);
+      // Serial.println(value_offset_min.x);
 
     } 
-    else if(value_x_max < bmm.raw_mag_data.raw_datax)
+    else if(value_offset_max.x < bmm.raw_mag_data.raw_datax)
     {
-      value_x_max = bmm.raw_mag_data.raw_datax;
+      value_offset_max.x = bmm.raw_mag_data.raw_datax;
       // Serial.print("update value_x_max: ");
-      // Serial.println(value_x_max);
+      // Serial.println(value_offset_max.x);
     }
 
     /* Update y-Axis max/min value */
-    if(value_y_min > bmm.raw_mag_data.raw_datay)
+    if(value_offset_min.y > bmm.raw_mag_data.raw_datay)
     {
-      value_y_min = bmm.raw_mag_data.raw_datay;
+      value_offset_min.y = bmm.raw_mag_data.raw_datay;
       // Serial.print("Update value_y_min: ");
-      // Serial.println(value_y_min);
+      // Serial.println(value_offset_min.y);
 
     } 
-    else if(value_y_max < bmm.raw_mag_data.raw_datay)
+    else if(value_offset_max.y < bmm.raw_mag_data.raw_datay)
     {
-      value_y_max = bmm.raw_mag_data.raw_datay;
+      value_offset_max.y = bmm.raw_mag_data.raw_datay;
       // Serial.print("update value_y_max: ");
-      // Serial.println(value_y_max);
+      // Serial.println(value_offset_max.y);
     }
 
     /* Update z-Axis max/min value */
-    if(value_z_min > bmm.raw_mag_data.raw_dataz)
+    if(value_offset_min.z > bmm.raw_mag_data.raw_dataz)
     {
-      value_z_min = bmm.raw_mag_data.raw_dataz;
+      value_offset_min.z = bmm.raw_mag_data.raw_dataz;
       // Serial.print("Update value_z_min: ");
-      // Serial.println(value_z_min);
+      // Serial.println(value_offset_min.z);
 
     } 
-    else if(value_z_max < bmm.raw_mag_data.raw_dataz)
+    else if(value_offset_max.z < bmm.raw_mag_data.raw_dataz)
     {
-      value_z_max = bmm.raw_mag_data.raw_dataz;
+      value_offset_max.z = bmm.raw_mag_data.raw_dataz;
       // Serial.print("update value_z_max: ");
-      // Serial.println(value_z_max);
+      // Serial.println(value_offset_max.z);
     }
     
     Serial.print(".");
@@ -94,9 +89,22 @@ void calibrate(uint32_t timeout)
 
   }
 
-  value_offset.x = value_x_min + (value_x_max - value_x_min)/2;
-  value_offset.y = value_y_min + (value_y_max - value_y_min)/2;
-  value_offset.z = value_z_min + (value_z_max - value_z_min)/2;
+
+  Serial.print("Update value_x_min: ");
+  Serial.println(value_offset_min.x);
+  Serial.print("update value_x_max: ");
+  Serial.println(value_offset_max.x);
+
+  Serial.print("Update value_y_min: ");
+  Serial.println(value_offset_min.y);
+  Serial.print("update value_y_max: ");
+  Serial.println(value_offset_max.y);
+  
+  Serial.print("Update value_z_min: ");
+  Serial.println(value_offset_min.z);
+  Serial.print("update value_z_max: ");
+  Serial.println(value_offset_max.z);
+
 }
 void setup() {
   // put your setup code here, to run once:
@@ -134,15 +142,15 @@ void loop() {
   M5.Lcd.printf("Temp: %2.1f Humi: %2.0f", tmp, hum);
 
 
-  bmm150_mag_data value;
+  float x,y,z;
   bmm.read_mag_data();
 
-  value.x = bmm.raw_mag_data.raw_datax - value_offset.x;
-  value.y = bmm.raw_mag_data.raw_datay - value_offset.y;
-  value.z = bmm.raw_mag_data.raw_dataz - value_offset.z;
-
-  float xyHeading = atan2(value.x, value.y);
-  float zxHeading = atan2(value.z, value.x);
+  x = (2.0 * bmm.raw_mag_data.raw_datax - value_offset_max.x - value_offset_min.x)/(value_offset_max.x - value_offset_min.x);
+  y = (2.0 * bmm.raw_mag_data.raw_datay - value_offset_max.y - value_offset_min.y)/(value_offset_max.y - value_offset_min.y);
+  z = (2.0 * bmm.raw_mag_data.raw_dataz - value_offset_max.z - value_offset_min.z)/(value_offset_max.z - value_offset_min.z);
+  
+  float xyHeading = atan2(x, y);
+  float zxHeading = atan2(z, x);
   float heading = xyHeading;
 
   if(heading < 0)
