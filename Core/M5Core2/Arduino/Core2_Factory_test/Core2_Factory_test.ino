@@ -2122,6 +2122,8 @@ void sysInitCheck()
     Disbuff.pushSprite(0,0);
 }
 
+void ft6336_fw_updater(void);
+
 void setup()
 {
     M5.begin(true, true, true, false);
@@ -2174,6 +2176,8 @@ void setup()
  
     M5.Axp.SetLDOVoltage(3,3300);
     M5.Axp.SetLed(1);
+
+    ft6336_fw_updater();
  
     Disbuff.drawJpg(CoreMainImage,87169,0,0,320,240,0,0);
     Disbuff.pushSprite(0,0);
