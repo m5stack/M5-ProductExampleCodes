@@ -22,7 +22,6 @@ void header(const char *string, uint16_t color)
 void setup() {
   M5.begin(true, false, true, true);
   header("SGP30 TEST",TFT_BLACK);
-  Serial.begin(115200);
   Serial.println("SGP30 test");
   if (! sgp.begin()){
     Serial.println("Sensor not found :(");
