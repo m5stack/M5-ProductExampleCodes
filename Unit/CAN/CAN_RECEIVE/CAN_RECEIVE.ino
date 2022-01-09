@@ -22,7 +22,6 @@ void header(const char *string, uint16_t color)
 
 void setup() {
     M5.begin(true, false, true);
-    Serial.begin(115200);
     Serial.println("CAN Unit Receive");
     header("CAN-Bus Receive", BLACK);
     
