@@ -52,7 +52,6 @@ byte demoMode=0;
 void setup() {
   pinMode(LED, OUTPUT);
   digitalWrite(LED, HIGH);
-  Serial.begin(115200);
   M5.begin();
   Wire.begin(0, 26); //SDA,SCL
   imuInit();
