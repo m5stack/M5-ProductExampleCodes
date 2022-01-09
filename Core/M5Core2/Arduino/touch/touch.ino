@@ -36,7 +36,6 @@ void touchflush()
 
 void setup() {
   M5.begin(true, true, true, true);
-  Serial.begin(115200);
   M5.Lcd.fillScreen(WHITE);
   M5.Lcd.setTextColor(BLACK);
   M5.Lcd.setTextSize(2);
