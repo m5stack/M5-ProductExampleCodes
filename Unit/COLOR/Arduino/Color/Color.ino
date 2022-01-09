@@ -30,8 +30,8 @@ Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS3472
 void setup() {
   delay(100);
 
-  M5.begin(true, false, false);
-  Serial.begin(115200);
+  M5.begin(true, false, true);
+
   Serial.println("Color View Test!");
 
   if (tcs.begin()) {
