@@ -33,7 +33,6 @@
 void setup()
 {
   M5.begin();
-  Serial.begin(115200);
   while (!Serial);             // Leonardo: wait for serial monitor
   Serial.println("\nI2C Scanner");
   M5.Lcd.println("\nI2C Scanner");
