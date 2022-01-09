@@ -6,7 +6,6 @@
 void setup()
 {
   M5.begin();
-  Serial.begin(115200);
   Wire.begin();
   pinMode(5, INPUT);
   digitalWrite(5, HIGH);
