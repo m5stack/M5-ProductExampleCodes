@@ -5,7 +5,6 @@
 
 void setup() {
   M5.begin(true, false, true);
-  Serial.begin(115200);   
   Serial2.begin(115200, SERIAL_8N1, RX_PIN, TX_PIN);
 }
 
