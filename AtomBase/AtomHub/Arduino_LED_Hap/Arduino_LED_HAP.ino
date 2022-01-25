@@ -12,8 +12,8 @@
 #include <FS.h>
 #include <SPIFFS.h>
 
-const char* ssid     = "M5-2.4G";
-const char* password = "Office@888888";
+const char* ssid     = "";
+const char* password = "";
 
 const int identity_led=-1;
 const int led_gpio = 21;
