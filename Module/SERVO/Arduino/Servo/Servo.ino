@@ -9,7 +9,7 @@ void setup() {
     M5.Lcd.setCursor(70, 100);
     M5.Lcd.print("Servo Example");
 
-    Wire.begin(21, 22, 100000);
+    Wire.begin(21, 22, 100000UL);
 }
 
 // addr 0x01 means "control the number 1 servo by us"
@@ -30,12 +30,12 @@ void Servo_write_angle(uint8_t number, uint8_t angle) {
 }
 
 void loop() {
-    for(uint8_t i = 0; i < 12; i++){
+    for (uint8_t i = 0; i < 12; i++) {
         Servo_write_us(i, 700);
         // Servo_write_angle(i, 0);
     }
     delay(1000);
-    for(uint8_t i = 0; i < 12; i++){
+    for (uint8_t i = 0; i < 12; i++) {
         Servo_write_us(i, 2300);
         // Servo_write_angle(i, 180);
     }

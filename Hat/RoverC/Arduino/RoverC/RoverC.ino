@@ -22,9 +22,9 @@ void setup()
 {
     M5.begin();
     M5.update();
-	Wire.begin(0,26,10000);
+    Wire.begin(0, 26, 100000UL);
 
-	uint64_t chipid=ESP.getEfuseMac();
+    uint64_t chipid=ESP.getEfuseMac();
 	String str = ssid + String((uint32_t)(chipid>>32),HEX);
 	M5.Lcd.setRotation(1);
 	M5.Lcd.setSwapBytes(false);
