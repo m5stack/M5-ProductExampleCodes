@@ -203,7 +203,7 @@ void ft6336_fw_updater(void)
     LOG("Firmware version: %d.0.0", fw_ver);
   }
 
-  if (fw_ver == OLD_FIRMWARE_VERSION)
+  if (fw_ver == 0 || fw_ver == OLD_FIRMWARE_VERSION)
   {
     LOG("FW length is %ld", sizeof(ft6336_fw_app));
     ft6x36_fw_upgrade(ft6336_fw_app, sizeof(ft6336_fw_app));
