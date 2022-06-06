@@ -23,6 +23,7 @@ float temp = 0;
 void setup() {
   // put your setup code here, to run once:
   M5.begin();
+  M5.Power.begin();
   M5.Lcd.fillScreen(BLACK);
   M5.Lcd.setTextSize(2);
   M5.Lcd.setCursor(100, 0);
@@ -40,11 +41,11 @@ void loop() {
 
   M5.Lcd.setCursor(10, 70);
   M5.Lcd.printf("%.2f   %.2f   %.2f   ", gyroX, gyroY,gyroZ);
-  M5.Lcd.setCursor(240, 70);
+  M5.Lcd.setCursor(270, 70);
   M5.Lcd.print("o/s");
   M5.Lcd.setCursor(10, 140);
   M5.Lcd.printf("%.2f   %.2f   %.2f   ",accX ,accY , accZ);
-  M5.Lcd.setCursor(240, 140);
+  M5.Lcd.setCursor(270, 140);
   M5.Lcd.print("G");
   M5.Lcd.setCursor(10, 210);
   M5.Lcd.printf("Temperature : %.2f C", temp);
