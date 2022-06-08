@@ -42,6 +42,22 @@ void setup(){
     calibration_mode = true;
   }
 
+  if (M5.BtnC.isPressed()) {
+    M5.Lcd.setCursor(0, 0);
+    M5.Lcd.println("Charge mode");
+    while (1) {
+        if (M5.Power.isCharging()) {
+            M5.Lcd.println("Start charging...");
+            while(1) {
+                if (M5.Power.isChargeFull())
+                    M5.Lcd.println("Charge completed!");
+                delay(5000);
+            }
+        }
+        delay(500);
+    }
+  }
+
   calibrationGet(&x_offset, &y_offset, &z_offset, &angle_center);
   Serial.printf("x: %d, y: %d, z:%d, angle: %.2f", x_offset, y_offset, z_offset, angle_center);
 
