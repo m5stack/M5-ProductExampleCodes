@@ -1,6 +1,8 @@
 ESP-IDF A2DP-SINK demo
 ======================
 
+!Using ESP-IDF 3.3
+
 Demo of A2DP audio sink role
 
 This is the demo of API implementing Advanced Audio Distribution Profile to receive an audio stream.
